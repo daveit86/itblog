@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { format } from "date-fns"
 import ArticleActions from "./articles/ArticleActions"
+import { showToast } from "@/lib/toast"
 
 interface Article {
   id: string
@@ -68,13 +69,14 @@ export default function ArticlesList({ articles }: ArticlesListProps) {
       const data = await res.json()
 
       if (res.ok) {
+        showToast.success(`Successfully ${action}ed ${selectedIds.size} articles`)
         window.location.reload()
       } else {
-        alert('Bulk action failed: ' + (data.error || 'Unknown error'))
+        showToast.error('Bulk action failed: ' + (data.error || 'Unknown error'))
       }
     } catch (error) {
       console.error('Bulk action error:', error)
-      alert('Bulk action failed')
+      showToast.error('Bulk action failed')
     } finally {
       setProcessing(false)
     }

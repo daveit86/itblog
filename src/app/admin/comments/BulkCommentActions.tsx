@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { bulkApproveComments, bulkDisapproveComments, bulkDeleteComments } from './actions'
+import { showToast } from '@/lib/toast'
 
 interface BulkCommentActionsProps {
   selectedIds: string[]
@@ -20,14 +21,14 @@ export default function BulkCommentActions({ selectedIds, onClearSelection }: Bu
     try {
       const result = await bulkApproveComments(selectedIds)
       if (result.error) {
-        alert(result.error)
+        showToast.error(result.error)
       } else {
-        alert(`Successfully approved ${result.success} comments`)
+        showToast.success(`Successfully approved ${result.success} comments`)
         onClearSelection()
         window.location.reload()
       }
     } catch (error) {
-      alert('Failed to approve comments')
+      showToast.error('Failed to approve comments')
     } finally {
       setLoading(false)
     }
@@ -40,14 +41,14 @@ export default function BulkCommentActions({ selectedIds, onClearSelection }: Bu
     try {
       const result = await bulkDisapproveComments(selectedIds)
       if (result.error) {
-        alert(result.error)
+        showToast.error(result.error)
       } else {
-        alert(`Successfully disapproved ${result.success} comments`)
+        showToast.success(`Successfully disapproved ${result.success} comments`)
         onClearSelection()
         window.location.reload()
       }
     } catch (error) {
-      alert('Failed to disapprove comments')
+      showToast.error('Failed to disapprove comments')
     } finally {
       setLoading(false)
     }
@@ -60,14 +61,14 @@ export default function BulkCommentActions({ selectedIds, onClearSelection }: Bu
     try {
       const result = await bulkDeleteComments(selectedIds)
       if (result.error) {
-        alert(result.error)
+        showToast.error(result.error)
       } else {
-        alert(`Successfully deleted ${result.success} comments`)
+        showToast.success(`Successfully deleted ${result.success} comments`)
         onClearSelection()
         window.location.reload()
       }
     } catch (error) {
-      alert('Failed to delete comments')
+      showToast.error('Failed to delete comments')
     } finally {
       setLoading(false)
     }

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { format } from 'date-fns'
 import { MediaFile, deleteMediaFile, bulkDeleteMediaFiles } from './actions'
 import FileUpload from '@/components/FileUpload'
+import { showToast } from '@/lib/toast'
 
 interface MediaClientProps {
   files: MediaFile[]
@@ -58,8 +59,9 @@ export default function MediaClient({ files, stats }: MediaClientProps) {
     
     const result = await deleteMediaFile(filename)
     if (result.error) {
-      alert(result.error)
+      showToast.error(result.error)
     } else {
+      showToast.success(`"${filename}" deleted successfully`)
       window.location.reload()
     }
   }
@@ -69,9 +71,9 @@ export default function MediaClient({ files, stats }: MediaClientProps) {
     
     const result = await bulkDeleteMediaFiles(Array.from(selectedFiles))
     if (result.error) {
-      alert(result.error)
+      showToast.error(result.error)
     } else {
-      alert(`Successfully deleted ${result.success} files`)
+      showToast.success(`Successfully deleted ${result.success} files`)
       window.location.reload()
     }
   }

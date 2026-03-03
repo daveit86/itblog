@@ -1,6 +1,7 @@
 'use client'
 
 import { approveComment, disapproveComment, deleteComment } from "./actions"
+import { showToast } from "@/lib/toast"
 
 interface CommentActionsProps {
   commentId: string
@@ -11,8 +12,9 @@ export default function CommentActions({ commentId, isApproved = false }: Commen
   const handleApprove = async () => {
     const result = await approveComment(commentId)
     if (result.error) {
-      alert(result.error)
+      showToast.error(result.error)
     } else {
+      showToast.success('Comment approved')
       window.location.reload()
     }
   }
@@ -20,8 +22,9 @@ export default function CommentActions({ commentId, isApproved = false }: Commen
   const handleDisapprove = async () => {
     const result = await disapproveComment(commentId)
     if (result.error) {
-      alert(result.error)
+      showToast.error(result.error)
     } else {
+      showToast.success('Comment disapproved')
       window.location.reload()
     }
   }
@@ -32,8 +35,9 @@ export default function CommentActions({ commentId, isApproved = false }: Commen
     }
     const result = await deleteComment(commentId)
     if (result.error) {
-      alert(result.error)
+      showToast.error(result.error)
     } else {
+      showToast.success('Comment deleted')
       window.location.reload()
     }
   }

@@ -1,6 +1,7 @@
 'use client'
 
 import { publishArticle, unpublishArticle, deleteArticle } from "./actions"
+import { showToast } from "@/lib/toast"
 
 interface ArticleActionsProps {
   articleId: string
@@ -11,8 +12,9 @@ export default function ArticleActions({ articleId, isPublished }: ArticleAction
   const handlePublish = async () => {
     const result = await publishArticle(articleId)
     if (result.error) {
-      alert(result.error)
+      showToast.error(result.error)
     } else {
+      showToast.success('Article published successfully')
       window.location.reload()
     }
   }
@@ -20,8 +22,9 @@ export default function ArticleActions({ articleId, isPublished }: ArticleAction
   const handleUnpublish = async () => {
     const result = await unpublishArticle(articleId)
     if (result.error) {
-      alert(result.error)
+      showToast.error(result.error)
     } else {
+      showToast.success('Article unpublished')
       window.location.reload()
     }
   }
@@ -32,8 +35,9 @@ export default function ArticleActions({ articleId, isPublished }: ArticleAction
     }
     const result = await deleteArticle(articleId)
     if (result.error) {
-      alert(result.error)
+      showToast.error(result.error)
     } else {
+      showToast.success('Article deleted successfully')
       window.location.reload()
     }
   }
