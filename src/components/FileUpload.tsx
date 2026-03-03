@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { showToast } from '@/lib/toast'
 
 interface FileUploadProps {
   onUpload: (url: string) => void
@@ -9,7 +10,6 @@ interface FileUploadProps {
 export default function FileUpload({ onUpload }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -40,7 +40,6 @@ export default function FileUpload({ onUpload }: FileUploadProps) {
 
   const uploadFile = async (file: File) => {
     setUploading(true)
-    setError(null)
 
     const formData = new FormData()
     formData.append('file', file)
@@ -54,12 +53,13 @@ export default function FileUpload({ onUpload }: FileUploadProps) {
       const data = await res.json()
 
       if (res.ok) {
+        showToast.success('File uploaded successfully')
         onUpload(data.url)
       } else {
-        setError(data.error || 'Upload failed')
+        showToast.error(data.error || 'Upload failed')
       }
     } catch (err) {
-      setError('Upload failed')
+      showToast.error('Upload failed')
     } finally {
       setUploading(false)
     }
@@ -114,9 +114,6 @@ export default function FileUpload({ onUpload }: FileUploadProps) {
         </label>
       </div>
 
-      {error && (
-        <p className="text-sm text-error">{error}</p>
-      )}
     </div>
   )
 }
