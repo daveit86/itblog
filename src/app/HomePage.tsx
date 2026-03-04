@@ -69,7 +69,16 @@ export default function HomePage({ articles }: { articles: Article[] }) {
         {/* Search Bar */}
         <div className="mb-12">
           <div className="relative max-w-xl mx-auto">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <input
+              type="text"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="block w-full pl-12 pr-10 py-3 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              style={{ textIndent: '0' }}
+            />
+            {/* Search Icon */}
+            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
               <svg
                 className="h-5 w-5 text-muted-foreground"
                 fill="none"
@@ -84,13 +93,6 @@ export default function HomePage({ articles }: { articles: Article[] }) {
                 />
               </svg>
             </div>
-            <input
-              type="text"
-              placeholder="Search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-[4.5rem] pr-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-            />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
