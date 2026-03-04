@@ -74,8 +74,8 @@ export default function HomePage({ articles }: { articles: Article[] }) {
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-12 pr-10 py-3 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-              style={{ textIndent: '0' }}
+              className="block w-full pr-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              style={{ padding: '.625rem 1rem .625rem 2.5rem' }}
             />
             {/* Search Icon */}
             <div className="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
