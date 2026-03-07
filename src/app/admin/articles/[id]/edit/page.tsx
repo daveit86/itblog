@@ -12,6 +12,8 @@ type ArticleData = {
   metaTitle: string | null
   metaDescription: string | null
   published: boolean
+  language: string
+  translationGroupId: string | null
 }
 
 export default async function EditArticlePage({ 
@@ -23,6 +25,19 @@ export default async function EditArticlePage({
   
   const article = await prisma.article.findUnique({
     where: { id },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      tags: true,
+      excerpt: true,
+      content: true,
+      metaTitle: true,
+      metaDescription: true,
+      published: true,
+      language: true,
+      translationGroupId: true,
+    }
   })
 
   if (!article) {

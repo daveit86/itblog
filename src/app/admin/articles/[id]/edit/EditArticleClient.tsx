@@ -22,6 +22,8 @@ export default function EditArticleClient({
     metaTitle: string | null
     metaDescription: string | null
     published: boolean
+    language: string
+    translationGroupId: string | null
   }
 }) {
   const router = useRouter()
@@ -31,6 +33,7 @@ export default function EditArticleClient({
   const [content, setContent] = useState(article.content)
   const [title, setTitle] = useState(article.title)
   const [slug, setSlug] = useState(article.slug)
+  const [language, setLanguage] = useState(article.language)
   const [showMediaPicker, setShowMediaPicker] = useState(false)
   const [versions, setVersions] = useState<Array<{
     id: string
@@ -234,19 +237,45 @@ export default function EditArticleClient({
               />
             </div>
 
-            <div>
-              <label htmlFor="slug" className="block text-sm font-medium text-gray-700">
-                Slug (URL-friendly name)
-              </label>
-              <input
-                type="text"
-                name="slug"
-                id="slug"
-                required
-                value={slug}
-                onChange={handleSlugChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="slug" className="block text-sm font-medium text-gray-700">
+                  Slug (URL-friendly name)
+                </label>
+                <input
+                  type="text"
+                  name="slug"
+                  id="slug"
+                  required
+                  value={slug}
+                  onChange={handleSlugChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="language" className="block text-sm font-medium text-gray-700">
+                  Language
+                </label>
+                <select
+                  name="language"
+                  id="language"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                >
+                  <option value="en">English</option>
+                  <option value="it">Italian</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                  <option value="pt">Portuguese</option>
+                  <option value="ru">Russian</option>
+                  <option value="zh">Chinese</option>
+                  <option value="ja">Japanese</option>
+                  <option value="ko">Korean</option>
+                </select>
+              </div>
             </div>
 
             <div>

@@ -21,6 +21,8 @@ export async function POST(request: Request) {
   const metaDescription = formData.get("metaDescription") as string | null
   const publishedValue = formData.get("published")
   const published = publishedValue === "on" || publishedValue === "true"
+  const language = (formData.get("language") as string) || "en"
+  const translationGroupId = (formData.get("translationGroupId") as string) || null
 
   if (!title || !slug || !content) {
     return NextResponse.json({ error: "Required fields missing" }, { status: 400 })
@@ -49,7 +51,9 @@ export async function POST(request: Request) {
       content, 
       metaTitle: metaTitle || null,
       metaDescription: metaDescription || null,
-      published: published || false 
+      published: published || false,
+      language,
+      translationGroupId
     },
   })
 

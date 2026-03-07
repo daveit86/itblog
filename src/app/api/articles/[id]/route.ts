@@ -22,6 +22,7 @@ export async function PUT(request: Request) {
   const tags = formData.get("tags") as string | null
   const metaTitle = formData.get("metaTitle") as string | null
   const metaDescription = formData.get("metaDescription") as string | null
+  const language = (formData.get("language") as string) || "en"
 
   if (!id || !title || !slug || !content) {
     return NextResponse.json({ error: "Required fields missing" }, { status: 400 })
@@ -52,6 +53,7 @@ export async function PUT(request: Request) {
       tags: tags || null,
       metaTitle: metaTitle || null,
       metaDescription: metaDescription || null,
+      language,
     },
   })
 
