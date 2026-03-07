@@ -108,6 +108,7 @@ export default function TranslationManager({ articleId, currentLanguage }: Trans
                   {languageNames[t.language] || t.language}
                 </a>
                 <button
+                  type="button"
                   onClick={() => handleUnlink(t.id)}
                   className="text-muted-foreground hover:text-error"
                   title="Unlink translation"
@@ -122,6 +123,7 @@ export default function TranslationManager({ articleId, currentLanguage }: Trans
 
       {/* Add Translation Button */}
       <button
+        type="button"
         onClick={openLinkModal}
         className="btn btn-secondary btn-sm"
       >
@@ -135,6 +137,7 @@ export default function TranslationManager({ articleId, currentLanguage }: Trans
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-lg font-semibold">Link Translation</h3>
               <button
+                type="button"
                 onClick={() => setShowLinkModal(false)}
                 className="text-muted-foreground hover:text-foreground"
               >
@@ -165,6 +168,7 @@ export default function TranslationManager({ articleId, currentLanguage }: Trans
                         </p>
                       </div>
                       <button
+                        type="button"
                         onClick={() => handleLink(article.id)}
                         className="btn btn-primary btn-sm"
                       >
