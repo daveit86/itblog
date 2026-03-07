@@ -4,7 +4,14 @@ import ArticlesList from "./ArticlesList"
 export default async function AdminPage() {
   const articles = await prisma.article.findMany({
     orderBy: { createdAt: 'desc' },
-    include: {
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      published: true,
+      language: true,
+      translationGroupId: true,
+      createdAt: true,
       _count: {
         select: { comments: true }
       }

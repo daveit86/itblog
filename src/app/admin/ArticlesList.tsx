@@ -11,10 +11,25 @@ interface Article {
   title: string
   slug: string
   published: boolean
+  language: string
+  translationGroupId: string | null
   createdAt: Date
   _count: {
     comments: number
   }
+}
+
+const languageFlags: Record<string, string> = {
+  en: '🇬🇧',
+  it: '🇮🇹',
+  es: '🇪🇸',
+  fr: '🇫🇷',
+  de: '🇩🇪',
+  pt: '🇵🇹',
+  ru: '🇷🇺',
+  zh: '🇨🇳',
+  ja: '🇯🇵',
+  ko: '🇰🇷'
 }
 
 interface ArticlesListProps {
@@ -176,6 +191,7 @@ export default function ArticlesList({ articles }: ArticlesListProps) {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Article</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Language</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Comments</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">Date</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
@@ -207,6 +223,18 @@ export default function ArticlesList({ articles }: ArticlesListProps) {
                       <span className={`w-1.5 h-1.5 rounded-full ${article.published ? 'bg-success' : 'bg-warning'}`} />
                       {article.published ? 'Published' : 'Draft'}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg" title={article.language}>
+                        {languageFlags[article.language] || '🌐'}
+                      </span>
+                      {article.translationGroupId && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-primary/10 text-primary" title="Has translations">
+                          🌐
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground hidden sm:table-cell">
                     <div className="flex items-center gap-1.5">

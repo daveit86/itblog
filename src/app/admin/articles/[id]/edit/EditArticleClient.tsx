@@ -8,6 +8,7 @@ import rehypeHighlight from "rehype-highlight"
 import { format } from "date-fns"
 import FileUpload from "@/components/FileUpload"
 import MediaPicker from "@/components/MediaPicker"
+import TranslationManager from "@/components/TranslationManager"
 
 export default function EditArticleClient({
   article
@@ -304,6 +305,12 @@ export default function EditArticleClient({
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
               />
             </div>
+
+            {/* Translation Manager */}
+            <TranslationManager 
+              articleId={article.id} 
+              currentLanguage={language} 
+            />
 
             {/* Media Upload & Selection */}
             <div className="p-4 bg-gray-50 rounded-md border border-gray-200">

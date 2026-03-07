@@ -72,6 +72,39 @@ function generateTOC(content: string) {
   })
 }
 
+// Get translations for an article
+async function getArticleTranslations(currentArticle: { id: string; translationGroupId: string | null }) {
+  if (!currentArticle.translationGroupId) return []
+  
+  const translations = await prisma.article.findMany({
+    where: {
+      translationGroupId: currentArticle.translationGroupId,
+      published: true,
+      NOT: { id: currentArticle.id }
+    },
+    select: {
+      slug: true,
+      title: true,
+      language: true,
+    }
+  })
+  
+  return translations
+}
+
+const languageNames: Record<string, string> = {
+  en: 'English',
+  it: 'Italian',
+  es: 'Spanish',
+  fr: 'French',
+  de: 'German',
+  pt: 'Portuguese',
+  ru: 'Russian',
+  zh: 'Chinese',
+  ja: 'Japanese',
+  ko: 'Korean'
+}
+
 // Find related articles based on shared tags
 async function getRelatedArticles(currentArticle: { id: string; tags: string | null }) {
   if (!currentArticle.tags) return []
@@ -132,14 +165,15 @@ export default async function ArticlePage({
     notFound()
   }
 
-  // Get related articles, TOC, and author info in parallel
-  const [relatedArticles, toc, author] = await Promise.all([
+  // Get related articles, TOC, author info, and translations in parallel
+  const [relatedArticles, toc, author, translations] = await Promise.all([
     getRelatedArticles(article),
     generateTOC(article.content),
     prisma.user.findFirst({
       where: { role: 'admin' },
       select: { name: true, image: true, bio: true }
-    })
+    }),
+    getArticleTranslations(article)
   ])
 
   return (
@@ -193,6 +227,36 @@ export default async function ArticlePage({
                 </span>
               )}
             </div>
+
+            {/* Language Selector */}
+            {translations.length > 0 && (
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border/50">
+                <span className="text-sm text-muted-foreground">Also available in:</span>
+                <div className="flex flex-wrap gap-2">
+                  {translations.map((t) => (
+                    <Link
+                      key={t.slug}
+                      href={`/blog/${t.slug}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm bg-muted hover:bg-muted/80 transition-colors border border-border"
+                    >
+                      <span className="text-lg">
+                        {t.language === 'en' && '🇬🇧'}
+                        {t.language === 'it' && '🇮🇹'}
+                        {t.language === 'es' && '🇪🇸'}
+                        {t.language === 'fr' && '🇫🇷'}
+                        {t.language === 'de' && '🇩🇪'}
+                        {t.language === 'pt' && '🇵🇹'}
+                        {t.language === 'ru' && '🇷🇺'}
+                        {t.language === 'zh' && '🇨🇳'}
+                        {t.language === 'ja' && '🇯🇵'}
+                        {t.language === 'ko' && '🇰🇷'}
+                      </span>
+                      <span>{languageNames[t.language] || t.language}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Tags and Bookmark */}
             <div className="flex flex-wrap items-center justify-between gap-4 mt-4">
