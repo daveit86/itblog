@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   const publishedValue = formData.get("published")
   const published = publishedValue === "on" || publishedValue === "true"
   const language = (formData.get("language") as string) || "en"
-  const translationGroupId = (formData.get("translationGroupId") as string) || null
+  const linkedArticleId = (formData.get("linkedArticleId") as string) || null
 
   if (!title || !slug || !content) {
     return NextResponse.json({ error: "Required fields missing" }, { status: 400 })
@@ -40,6 +40,25 @@ export async function POST(request: Request) {
 
   if (existingArticle) {
     return NextResponse.json({ error: "An article with this slug already exists" }, { status: 400 })
+  }
+
+  // If linking to an existing article, get its translation group
+  let translationGroupId: string | null = null
+  if (linkedArticleId) {
+    const linkedArticle = await prisma.article.findUnique({
+      where: { id: linkedArticleId },
+      select: { translationGroupId: true }
+    })
+    if (linkedArticle) {
+      translationGroupId = linkedArticle.translationGroupId || `group-${Date.now()}`
+      // Update the linked article to have the translation group if it doesn't
+      if (!linkedArticle.translationGroupId) {
+        await prisma.article.update({
+          where: { id: linkedArticleId },
+          data: { translationGroupId }
+        })
+      }
+    }
   }
 
   await prisma.article.create({

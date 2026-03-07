@@ -7,6 +7,7 @@ import ReactMarkdown from "react-markdown"
 import rehypeHighlight from "rehype-highlight"
 import FileUpload from "@/components/FileUpload"
 import MediaPicker from "@/components/MediaPicker"
+import NewArticleTranslationManager from "@/components/NewArticleTranslationManager"
 
 interface DraftData {
   title: string
@@ -31,6 +32,7 @@ export default function NewArticlePage() {
   const [lastSaved, setLastSaved] = useState<string | null>(null)
   const [showMediaPicker, setShowMediaPicker] = useState(false)
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit')
+  const [linkedArticleId, setLinkedArticleId] = useState('')
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -130,6 +132,9 @@ export default function NewArticlePage() {
     Object.entries(formData).forEach(([key, value]) => {
       submitFormData.append(key, value.toString())
     })
+    if (linkedArticleId) {
+      submitFormData.append('linkedArticleId', linkedArticleId)
+    }
     
     try {
       const res = await fetch("/api/articles", {
@@ -319,6 +324,12 @@ export default function NewArticlePage() {
               className="mt-1 block w-full rounded-md border-border bg-card shadow-sm focus:border-primary focus:ring-primary p-2 border"
             />
           </div>
+
+          {/* Translation Manager for linking to existing articles */}
+          <NewArticleTranslationManager
+            currentLanguage={formData.language}
+            onLink={setLinkedArticleId}
+          />
 
           <div>
             <label htmlFor="content" className="block text-sm font-medium text-foreground">
