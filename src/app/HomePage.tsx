@@ -13,27 +13,71 @@ interface Article {
   excerpt: string | null
   content: string
   tags: string | null
+  language: string
   createdAt: Date
   _count: {
     comments: number
   }
 }
 
+const languageNames: Record<string, string> = {
+  en: 'English',
+  it: 'Italian',
+  es: 'Spanish',
+  fr: 'French',
+  de: 'German',
+  pt: 'Portuguese',
+  ru: 'Russian',
+  zh: 'Chinese',
+  ja: 'Japanese',
+  ko: 'Korean'
+}
+
+const languageFlags: Record<string, string> = {
+  en: '🇬🇧',
+  it: '🇮🇹',
+  es: '🇪🇸',
+  fr: '🇫🇷',
+  de: '🇩🇪',
+  pt: '🇵🇹',
+  ru: '🇷🇺',
+  zh: '🇨🇳',
+  ja: '🇯🇵',
+  ko: '🇰🇷'
+}
+
 export default function HomePage({ articles }: { articles: Article[] }) {
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('all')
+
+  // Get unique languages from articles
+  const availableLanguages = useMemo(() => {
+    const langs = new Set(articles.map(a => a.language))
+    return Array.from(langs).sort()
+  }, [articles])
 
   const filteredArticles = useMemo(() => {
-    if (!searchQuery.trim()) return articles
+    let result = articles
     
-    const query = searchQuery.toLowerCase()
-    return articles.filter(article => {
-      const titleMatch = article.title.toLowerCase().includes(query)
-      const contentMatch = article.content.toLowerCase().includes(query)
-      const excerptMatch = article.excerpt?.toLowerCase().includes(query) || false
-      const tagsMatch = article.tags?.toLowerCase().includes(query) || false
-      return titleMatch || contentMatch || excerptMatch || tagsMatch
-    })
-  }, [articles, searchQuery])
+    // Filter by language
+    if (selectedLanguage !== 'all') {
+      result = result.filter(article => article.language === selectedLanguage)
+    }
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(article => {
+        const titleMatch = article.title.toLowerCase().includes(query)
+        const contentMatch = article.content.toLowerCase().includes(query)
+        const excerptMatch = article.excerpt?.toLowerCase().includes(query) || false
+        const tagsMatch = article.tags?.toLowerCase().includes(query) || false
+        return titleMatch || contentMatch || excerptMatch || tagsMatch
+      })
+    }
+    
+    return result
+  }, [articles, searchQuery, selectedLanguage])
 
   return (
     <div className="min-h-screen bg-background">
@@ -66,8 +110,8 @@ export default function HomePage({ articles }: { articles: Article[] }) {
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-12">
+        {/* Search and Filter Bar */}
+        <div className="mb-12 space-y-4">
           <div className="relative max-w-xl mx-auto">
             <input
               type="text"
@@ -104,8 +148,39 @@ export default function HomePage({ articles }: { articles: Article[] }) {
               </button>
             )}
           </div>
-          {searchQuery && (
-            <p className="text-center mt-3 text-sm text-muted-foreground">
+          
+          {/* Language Filter */}
+          {availableLanguages.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2">
+              <button
+                onClick={() => setSelectedLanguage('all')}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  selectedLanguage === 'all'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                All Languages
+              </button>
+              {availableLanguages.map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => setSelectedLanguage(lang)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    selectedLanguage === lang
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  <span className="mr-1">{languageFlags[lang] || '🌐'}</span>
+                  {languageNames[lang] || lang}
+                </button>
+              ))}
+            </div>
+          )}
+          
+          {(searchQuery || selectedLanguage !== 'all') && (
+            <p className="text-center text-sm text-muted-foreground">
               Found <span className="font-medium text-foreground">{filteredArticles.length}</span> {filteredArticles.length === 1 ? 'article' : 'articles'}
             </p>
           )}
@@ -142,6 +217,11 @@ export default function HomePage({ articles }: { articles: Article[] }) {
                 
                 {/* Meta */}
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-muted text-xs font-medium">
+                    {languageFlags[article.language] || '🌐'}
+                    {languageNames[article.language] || article.language}
+                  </span>
+                  <span className="text-border">·</span>
                   <time dateTime={article.createdAt.toISOString()} className="flex items-center gap-1.5">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
