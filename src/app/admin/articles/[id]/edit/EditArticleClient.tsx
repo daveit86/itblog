@@ -313,20 +313,20 @@ export default function EditArticleClient({
             />
 
             {/* Media Upload & Selection */}
-            <div className="p-4 bg-gray-50 rounded-md border border-gray-200">
-              <h4 className="text-sm font-medium text-gray-700 mb-3">Add Media</h4>
+            <div className="p-4 bg-muted rounded-md border border-border">
+              <h4 className="text-sm font-medium text-foreground mb-3">Add Media</h4>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <FileUpload onUpload={handleFileUpload} />
                 </div>
                 <div className="flex items-center justify-center">
-                  <span className="text-sm text-gray-500">or</span>
+                  <span className="text-sm text-muted-foreground">or</span>
                 </div>
                 <div className="flex items-center">
                   <button
                     type="button"
                     onClick={() => setShowMediaPicker(true)}
-                    className="w-full sm:w-auto px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-sm font-medium"
+                    className="w-full sm:w-auto px-4 py-2 bg-card text-foreground border border-border rounded-md hover:bg-muted text-sm font-medium"
                   >
                     Choose from Library
                   </button>
@@ -390,17 +390,17 @@ export default function EditArticleClient({
                 name="published"
                 id="published"
                 defaultChecked={article.published}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 rounded border-border text-primary focus:ring-primary bg-card"
               />
-              <label htmlFor="published" className="ml-2 block text-sm text-gray-900">
+              <label htmlFor="published" className="ml-2 block text-sm text-foreground">
                 Publish
               </label>
             </div>
           </>
         ) : activeTab === 'preview' ? (
-          <div className="bg-white border rounded-lg p-8 min-h-[500px]">
-            <div className="mb-4 pb-4 border-b">
-              <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+          <div className="bg-card border border-border rounded-lg p-8 min-h-[500px]">
+            <div className="mb-4 pb-4 border-b border-border">
+              <h1 className="text-3xl font-bold text-foreground">{title}</h1>
             </div>
             <article className="prose prose-lg max-w-none dark:prose-invert">
               <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
@@ -410,18 +410,18 @@ export default function EditArticleClient({
           </div>
         ) : (
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-800">Version History</h3>
+            <h3 className="text-lg font-medium text-foreground">Version History</h3>
             {loadingVersions ? (
-              <p className="text-gray-500">Loading versions...</p>
+              <p className="text-muted-foreground">Loading versions...</p>
             ) : versions.length === 0 ? (
-              <p className="text-gray-500">No previous versions saved.</p>
+              <p className="text-muted-foreground">No previous versions saved.</p>
             ) : (
               <div className="space-y-3">
                 {versions.map((version) => (
-                  <div key={version.id} className="border border-gray-200 rounded-lg p-4 flex justify-between items-center">
+                  <div key={version.id} className="border border-border rounded-lg p-4 flex justify-between items-center bg-card">
                     <div>
-                      <p className="font-medium text-gray-800">{version.title}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-medium text-foreground">{version.title}</p>
+                      <p className="text-sm text-muted-foreground">
                         Version {version.version} • {format(new Date(version.createdAt), 'MMM d, yyyy HH:mm')}
                       </p>
                     </div>
@@ -429,7 +429,7 @@ export default function EditArticleClient({
                       type="button"
                       onClick={() => restoreVersion(version.id)}
                       disabled={loading}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium disabled:opacity-50"
+                      className="text-primary hover:text-primary-hover text-sm font-medium disabled:opacity-50"
                     >
                       Restore
                     </button>
@@ -444,7 +444,7 @@ export default function EditArticleClient({
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="btn btn-primary"
           >
             {loading ? 'Updating...' : 'Update Article'}
           </button>
@@ -452,13 +452,13 @@ export default function EditArticleClient({
             type="button"
             onClick={handleDelete}
             disabled={loading}
-            className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:opacity-50"
+            className="btn btn-danger"
           >
             Delete
           </button>
           <Link
             href="/admin"
-            className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300"
+            className="btn btn-secondary"
           >
             Cancel
           </Link>

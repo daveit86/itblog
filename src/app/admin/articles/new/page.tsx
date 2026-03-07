@@ -306,20 +306,20 @@ export default function NewArticlePage() {
           </p>
           
           {/* Media Upload & Selection */}
-          <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Add Media</h4>
+          <div className="mt-4 p-4 bg-muted rounded-md border border-border">
+            <h4 className="text-sm font-medium text-foreground mb-3">Add Media</h4>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <FileUpload onUpload={handleFileUpload} />
               </div>
               <div className="flex items-center justify-center">
-                <span className="text-sm text-gray-500">or</span>
+                <span className="text-sm text-muted-foreground">or</span>
               </div>
               <div className="flex items-center">
                 <button
                   type="button"
                   onClick={() => setShowMediaPicker(true)}
-                  className="w-full sm:w-auto px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-sm font-medium"
+                  className="w-full sm:w-auto px-4 py-2 bg-card text-foreground border border-border rounded-md hover:bg-muted text-sm font-medium"
                 >
                   Choose from Library
                 </button>
