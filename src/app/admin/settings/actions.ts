@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { getServerSession } from "next-auth"
 import prisma from "@/lib/prisma"
 import bcrypt from 'bcryptjs'
+import { testSMTPConnection } from "@/lib/email"
 
 // Helper function to check admin authorization
 async function checkAdminAuth() {
@@ -210,4 +211,78 @@ export async function updateNotificationSettings(formData: FormData): Promise<{ 
   } catch (error) {
     return { error: "Failed to update notification settings" }
   }
+}
+
+export async function updateSMTPSettings(formData: FormData): Promise<{ error?: string; success?: boolean }> {
+  const auth = await checkAdminAuth()
+  
+  if (auth.error) {
+    return { error: auth.error }
+  }
+
+  const smtpHost = formData.get("smtpHost") as string
+  const smtpPort = parseInt(formData.get("smtpPort") as string) || 587
+  const smtpSecure = formData.get("smtpSecure") === "on"
+  const smtpUser = formData.get("smtpUser") as string
+  const smtpPass = formData.get("smtpPass") as string
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: auth.email! }
+    })
+
+    if (!user) {
+      return { error: "User not found" }
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { 
+        smtpHost: smtpHost || null,
+        smtpPort,
+        smtpSecure,
+        smtpUser: smtpUser || null,
+        smtpPass: smtpPass || null,
+      },
+    })
+    return { success: true }
+  } catch (error) {
+    return { error: "Failed to update SMTP settings" }
+  }
+}
+
+export async function updateProfilePicture(imageUrl: string): Promise<{ error?: string; success?: boolean }> {
+  const auth = await checkAdminAuth()
+  
+  if (auth.error) {
+    return { error: auth.error }
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: auth.email! }
+    })
+
+    if (!user) {
+      return { error: "User not found" }
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { image: imageUrl },
+    })
+    return { success: true }
+  } catch (error) {
+    return { error: "Failed to update profile picture" }
+  }
+}
+
+export async function testSMTP(): Promise<{ success: boolean; message: string }> {
+  const auth = await checkAdminAuth()
+  
+  if (auth.error) {
+    return { success: false, message: auth.error }
+  }
+
+  return await testSMTPConnection()
 }

@@ -18,6 +18,11 @@ model User {
   notifyOnComments    Boolean     @default(true)
   notifyOnPublish     Boolean     @default(false)
   adminEmail          String?
+  smtpHost            String?
+  smtpPort            Int?        @default(587)
+  smtpSecure          Boolean?    @default(false)
+  smtpUser            String?
+  smtpPass            String?
   accounts            Account[]
   sessions            Session[]
   auditLogs           AuditLog[]

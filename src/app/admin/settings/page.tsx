@@ -28,6 +28,11 @@ export default async function SettingsPage() {
       notifyOnComments: true,
       notifyOnPublish: true,
       adminEmail: true,
+      smtpHost: true,
+      smtpPort: true,
+      smtpSecure: true,
+      smtpUser: true,
+      smtpPass: true,
     }
   })
 
@@ -42,6 +47,11 @@ export default async function SettingsPage() {
       notifyOnComments: true,
       notifyOnPublish: false,
       adminEmail: session.user.email,
+      smtpHost: null,
+      smtpPort: null,
+      smtpSecure: null,
+      smtpUser: null,
+      smtpPass: null,
     }
   }
 

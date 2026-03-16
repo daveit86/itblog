@@ -1,29 +1,55 @@
 import nodemailer from 'nodemailer'
 import prisma from './prisma'
 
-// Create transporter - uses SMTP or falls back to ethereal for testing
-const createTransporter = async () => {
-  // Check if SMTP credentials are provided and not empty
-  const smtpHost = process.env.SMTP_HOST?.trim()
-  const smtpUser = process.env.SMTP_USER?.trim()
-  const smtpPass = process.env.SMTP_PASS?.trim()
-  
-  if (smtpHost && smtpUser && smtpPass) {
-    console.log('📧 Using SMTP configuration:', smtpHost)
+// Create transporter - uses database settings or falls back to environment/test accounts
+export const createTransporter = async () => {
+  // Get admin user with SMTP settings
+  const admin = await prisma.user.findFirst({
+    where: { role: 'admin' },
+    select: {
+      smtpHost: true,
+      smtpPort: true,
+      smtpSecure: true,
+      smtpUser: true,
+      smtpPass: true,
+    }
+  })
+
+  // Check if SMTP is configured in database
+  if (admin?.smtpHost && admin?.smtpUser && admin?.smtpPass) {
+    console.log('📧 Using database SMTP configuration:', admin.smtpHost)
     return nodemailer.createTransport({
-      host: smtpHost,
+      host: admin.smtpHost,
+      port: admin.smtpPort || 587,
+      secure: admin.smtpSecure || false,
+      auth: {
+        user: admin.smtpUser,
+        pass: admin.smtpPass,
+      },
+    })
+  }
+
+  // Fallback to environment variables
+  const envHost = process.env.SMTP_HOST?.trim()
+  const envUser = process.env.SMTP_USER?.trim()
+  const envPass = process.env.SMTP_PASS?.trim()
+  
+  if (envHost && envUser && envPass) {
+    console.log('📧 Using environment SMTP configuration:', envHost)
+    return nodemailer.createTransport({
+      host: envHost,
       port: parseInt(process.env.SMTP_PORT || '587'),
       secure: process.env.SMTP_SECURE === 'true',
       auth: {
-        user: smtpUser,
-        pass: smtpPass,
+        user: envUser,
+        pass: envPass,
       },
     })
   }
 
   // For development/testing, create a test account with Ethereal
   console.log('⚠️  No SMTP credentials found. Using test email account (emails will not be delivered).')
-  console.log('💡 To receive real emails, configure SMTP_HOST, SMTP_USER, and SMTP_PASS in your .env file')
+  console.log('💡 Configure SMTP in Settings > Email to receive real email notifications.')
   
   const testAccount = await nodemailer.createTestAccount()
   console.log('📧 Test account created:', testAccount.user)
@@ -40,7 +66,7 @@ const createTransporter = async () => {
 }
 
 // Get admin notification settings
-async function getAdminNotificationSettings() {
+export const getAdminNotificationSettings = async () => {
   // Find the first admin user
   const admin = await prisma.user.findFirst({
     where: { role: 'admin' },
@@ -65,6 +91,21 @@ async function getAdminNotificationSettings() {
     notifyOnComments: admin.notifyOnComments,
     notifyOnPublish: admin.notifyOnPublish,
     email: admin.adminEmail?.trim() || admin.email?.trim() || process.env.ADMIN_NOTIFICATION_EMAIL?.trim() || 'daveit10@gmail.com'
+  }
+}
+
+// Test SMTP connection
+export const testSMTPConnection = async (): Promise<{ success: boolean; message: string }> => {
+  try {
+    const transporter = await createTransporter()
+    await transporter.verify()
+    return { success: true, message: 'SMTP connection successful!' }
+  } catch (error) {
+    console.error('SMTP test failed:', error)
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : 'Failed to connect to SMTP server'
+    }
   }
 }
 
@@ -164,7 +205,7 @@ Comment ID: ${data.commentId}
     if (previewUrl) {
       console.log('📧 Test email sent!')
       console.log('📧 Preview URL:', previewUrl)
-      console.log('💡 Note: This is a test email. To receive real emails, configure SMTP credentials.')
+      console.log('💡 Note: This is a test email. To receive real emails, configure SMTP in Settings.')
     } else {
       console.log('✅ Email sent successfully to:', settings.email)
       console.log('📧 Message ID:', info.messageId)
@@ -251,3 +292,6 @@ You're receiving this because you have publish notifications enabled in your set
     return { success: false, error: 'Failed to send notification email' }
   }
 }
+
+// Export types
+export type { CommentNotificationData, PublishNotificationData }
