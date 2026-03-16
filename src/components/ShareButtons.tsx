@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ShareButtonsProps {
   title: string
@@ -9,10 +9,18 @@ interface ShareButtonsProps {
 
 export default function ShareButtons({ title, slug }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false)
-  const url = typeof window !== 'undefined' 
-    ? `${window.location.origin}/blog/${slug}`
-    : ''
-  const encodedUrl = encodeURIComponent(url)
+  const [shareUrl, setShareUrl] = useState('')
+  const [isClient, setIsClient] = useState(false)
+
+  // Fix hydration mismatch by only calculating URL on client
+  useEffect(() => {
+    setIsClient(true)
+    if (typeof window !== 'undefined') {
+      setShareUrl(`${window.location.origin}/blog/${slug}`)
+    }
+  }, [slug])
+
+  const encodedUrl = encodeURIComponent(shareUrl)
   const encodedTitle = encodeURIComponent(title)
 
   const shareLinks = [
@@ -59,13 +67,29 @@ export default function ShareButtons({ title, slug }: ShareButtonsProps) {
   ]
 
   const copyLink = async () => {
+    if (!shareUrl) return
     try {
-      await navigator.clipboard.writeText(url)
+      await navigator.clipboard.writeText(shareUrl)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
-      console.error('Failed to copy:', err)
+      // Silently fail
     }
+  }
+
+  // Don't render until client-side to avoid hydration mismatch
+  if (!isClient) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground mr-2">Share:</span>
+        <div className="flex gap-1">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="p-2 rounded-md bg-muted w-9 h-9" />
+          ))}
+        </div>
+        <div className="p-2 rounded-md bg-muted w-9 h-9" />
+      </div>
+    )
   }
 
   return (
