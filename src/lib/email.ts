@@ -3,22 +3,30 @@ import prisma from './prisma'
 
 // Create transporter - uses SMTP or falls back to ethereal for testing
 const createTransporter = async () => {
-  // If SMTP credentials are provided, use them
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  // Check if SMTP credentials are provided and not empty
+  const smtpHost = process.env.SMTP_HOST?.trim()
+  const smtpUser = process.env.SMTP_USER?.trim()
+  const smtpPass = process.env.SMTP_PASS?.trim()
+  
+  if (smtpHost && smtpUser && smtpPass) {
+    console.log('📧 Using SMTP configuration:', smtpHost)
     return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
+      host: smtpHost,
       port: parseInt(process.env.SMTP_PORT || '587'),
       secure: process.env.SMTP_SECURE === 'true',
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: smtpUser,
+        pass: smtpPass,
       },
     })
   }
 
   // For development/testing, create a test account with Ethereal
+  console.log('⚠️  No SMTP credentials found. Using test email account (emails will not be delivered).')
+  console.log('💡 To receive real emails, configure SMTP_HOST, SMTP_USER, and SMTP_PASS in your .env file')
+  
   const testAccount = await nodemailer.createTestAccount()
-  console.log('Using test email account:', testAccount.user)
+  console.log('📧 Test account created:', testAccount.user)
   
   return nodemailer.createTransport({
     host: 'smtp.ethereal.email',
@@ -49,14 +57,14 @@ async function getAdminNotificationSettings() {
     return {
       notifyOnComments: true,
       notifyOnPublish: false,
-      email: process.env.ADMIN_NOTIFICATION_EMAIL || 'daveit10@gmail.com'
+      email: process.env.ADMIN_NOTIFICATION_EMAIL?.trim() || 'daveit10@gmail.com'
     }
   }
 
   return {
     notifyOnComments: admin.notifyOnComments,
     notifyOnPublish: admin.notifyOnPublish,
-    email: admin.adminEmail || admin.email || process.env.ADMIN_NOTIFICATION_EMAIL || 'daveit10@gmail.com'
+    email: admin.adminEmail?.trim() || admin.email?.trim() || process.env.ADMIN_NOTIFICATION_EMAIL?.trim() || 'daveit10@gmail.com'
   }
 }
 
@@ -79,6 +87,8 @@ export async function sendNewCommentNotification(data: CommentNotificationData) 
       return { success: true, skipped: true }
     }
 
+    console.log('📧 Sending comment notification to:', settings.email)
+    
     const transporter = await createTransporter()
     
     const blogUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
@@ -88,10 +98,10 @@ export async function sendNewCommentNotification(data: CommentNotificationData) 
     const mailOptions = {
       from: `"IT Blog Notifications" <noreply@itblog.com>`,
       to: settings.email,
-      subject: `New comment on "${data.articleTitle}" - Approval Required`,
+      subject: `📝 New comment on "${data.articleTitle}" - Approval Required`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">New Comment Received</h2>
+          <h2 style="color: #333;">📝 New Comment Received</h2>
           
           <p>A new comment has been submitted on your blog and requires approval.</p>
           
@@ -114,7 +124,7 @@ export async function sendNewCommentNotification(data: CommentNotificationData) 
           <div style="margin: 30px 0; text-align: center;">
             <a href="${adminUrl}" 
                style="background: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
-              Approve or Delete Comment
+               Approve or Delete Comment
             </a>
           </div>
           
@@ -128,7 +138,7 @@ export async function sendNewCommentNotification(data: CommentNotificationData) 
         </div>
       `,
       text: `
-New Comment Received
+📝 New Comment Received
 
 A new comment has been submitted on "${data.articleTitle}" and requires approval.
 
@@ -154,13 +164,15 @@ Comment ID: ${data.commentId}
     if (previewUrl) {
       console.log('📧 Test email sent!')
       console.log('📧 Preview URL:', previewUrl)
+      console.log('💡 Note: This is a test email. To receive real emails, configure SMTP credentials.')
     } else {
-      console.log('📧 Email sent to admin:', settings.email)
+      console.log('✅ Email sent successfully to:', settings.email)
+      console.log('📧 Message ID:', info.messageId)
     }
     
-    return { success: true, messageId: info.messageId }
+    return { success: true, messageId: info.messageId, previewUrl }
   } catch (error) {
-    console.error('Failed to send email notification:', error)
+    console.error('❌ Failed to send email notification:', error)
     // Don't throw - we don't want to break the comment submission if email fails
     return { success: false, error: 'Failed to send notification email' }
   }
@@ -190,10 +202,10 @@ export async function sendArticlePublishedNotification(data: PublishNotification
     const mailOptions = {
       from: `"IT Blog Notifications" <noreply@itblog.com>`,
       to: settings.email,
-      subject: `Article Published: "${data.articleTitle}"`,
+      subject: `✅ Article Published: "${data.articleTitle}"`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Article Published Successfully</h2>
+          <h2 style="color: #333;">✅ Article Published Successfully</h2>
           
           <p>Your article has been published and is now live on your blog.</p>
           
@@ -213,7 +225,7 @@ export async function sendArticlePublishedNotification(data: PublishNotification
         </div>
       `,
       text: `
-Article Published Successfully
+✅ Article Published Successfully
 
 Your article "${data.articleTitle}" has been published and is now live on your blog.
 
@@ -230,12 +242,12 @@ You're receiving this because you have publish notifications enabled in your set
       console.log('📧 Test email sent!')
       console.log('📧 Preview URL:', previewUrl)
     } else {
-      console.log('📧 Email sent to admin:', settings.email)
+      console.log('✅ Email sent to admin:', settings.email)
     }
     
     return { success: true, messageId: info.messageId }
   } catch (error) {
-    console.error('Failed to send publish notification:', error)
+    console.error('❌ Failed to send publish notification:', error)
     return { success: false, error: 'Failed to send notification email' }
   }
 }

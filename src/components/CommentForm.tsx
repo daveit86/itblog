@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from "react"
+import toast from "react-hot-toast"
 
 interface CommentFormProps {
   articleId: string
@@ -17,12 +18,11 @@ export default function CommentForm({
   onCancel,
   isReply = false 
 }: CommentFormProps) {
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
-  const [message, setMessage] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setStatus('submitting')
+    setIsSubmitting(true)
     
     const formData = new FormData(e.currentTarget)
     formData.append("articleId", articleId)
@@ -39,17 +39,26 @@ export default function CommentForm({
       const data = await res.json()
 
       if (res.ok) {
-        setStatus('success')
-        setMessage(data.message || "Comment submitted successfully! It will appear after moderation.")
+        toast.success(data.message || "Comment submitted successfully! It will appear after moderation.", {
+          duration: 4000,
+          icon: '✅',
+        })
         ;(e.target as HTMLFormElement).reset()
         onSuccess?.()
       } else {
-        setStatus('error')
-        setMessage(data.error || "Failed to submit comment. Please try again.")
+        const errorMessage = data.error || "Failed to submit comment. Please try again."
+        toast.error(errorMessage, {
+          duration: 5000,
+          icon: '❌',
+        })
       }
     } catch {
-      setStatus('error')
-      setMessage("Failed to submit comment. Please check your connection and try again.")
+      toast.error("Failed to submit comment. Please check your connection and try again.", {
+        duration: 5000,
+        icon: '❌',
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -58,19 +67,6 @@ export default function CommentForm({
       <h3 className="text-lg font-semibold text-foreground mb-4">
         {isReply ? 'Write a Reply' : 'Leave a Comment'}
       </h3>
-      
-      {status === 'success' && (
-        <div className="bg-green-500/10 border border-green-500/20 text-green-600 px-4 py-3 rounded mb-4">
-          <p className="font-medium">✓ {message}</p>
-          <p className="text-sm mt-1 opacity-80">Thank you for your contribution!</p>
-        </div>
-      )}
-      
-      {status === 'error' && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-600 px-4 py-3 rounded mb-4">
-          {message}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Honeypot field - invisible to humans, bots will fill it */}
@@ -122,10 +118,10 @@ export default function CommentForm({
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             type="submit"
-            disabled={status === 'submitting'}
+            disabled={isSubmitting}
             className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-hover disabled:opacity-50 transition-colors font-medium"
           >
-            {status === 'submitting' ? 'Submitting...' : isReply ? 'Submit Reply' : 'Submit Comment'}
+            {isSubmitting ? 'Submitting...' : isReply ? 'Submit Reply' : 'Submit Comment'}
           </button>
           {isReply && onCancel && (
             <button
