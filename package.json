@@ -14,7 +14,9 @@
     "article:create": "npx ts-node scripts/article-cli.ts create",
     "article:import": "npx ts-node scripts/article-cli.ts import",
     "article:help": "npx ts-node scripts/article-cli.ts help",
-    "db:seed": "npx tsx prisma/seed.ts"
+    "db:seed": "npx tsx prisma/seed.ts",
+    "backup:create": "./scripts/backup-complete.sh",
+    "backup:restore": "./scripts/restore-complete.sh"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
