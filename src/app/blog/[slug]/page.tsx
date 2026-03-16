@@ -152,9 +152,7 @@ export default async function ArticlePage({
   const article = await prisma.article.findUnique({
     where: isAdmin ? { slug } : { slug, published: true },
     include: {
-      comments: isAdmin ? {
-        orderBy: { createdAt: 'desc' }
-      } : {
+      comments: {
         where: { 
           approved: true,
           parentId: null // Only fetch top-level approved comments
