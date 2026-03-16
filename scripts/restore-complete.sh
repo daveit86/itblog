@@ -176,6 +176,46 @@ async function restore() {
     }
   }
   
+  // Restore accounts (passwords)
+  if (backupData.accounts && backupData.accounts.length > 0) {
+    console.log('');
+    console.log('Restoring accounts (passwords)...');
+    for (const account of backupData.accounts) {
+      try {
+        // Check if user exists before restoring account
+        const userExists = await prisma.user.findUnique({
+          where: { id: account.userId }
+        });
+        
+        if (userExists) {
+          // Check if account already exists
+          const existingAccount = await prisma.account.findFirst({
+            where: { 
+              userId: account.userId,
+              provider: account.provider
+            }
+          });
+          
+          if (!existingAccount) {
+            await prisma.account.create({
+              data: {
+                ...account,
+                expires_at: account.expires_at || null,
+              }
+            });
+            console.log('  ✓ Restored account for user:', account.userId);
+          } else {
+            console.log('  ⊘ Skipped account (exists):', account.userId);
+          }
+        } else {
+          console.log('  ⊘ Skipped account (user not found):', account.userId);
+        }
+      } catch (e) {
+        console.error('  ✗ Failed account:', account.userId, '-', e.message);
+      }
+    }
+  }
+  
   console.log('');
   console.log('✅ Database restore complete!');
 }

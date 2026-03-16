@@ -78,11 +78,30 @@ async function backup() {
     }
   });
   
+  console.log('Fetching accounts (passwords)...');
+  const accounts = await prisma.account.findMany({
+    select: {
+      id: true,
+      userId: true,
+      type: true,
+      provider: true,
+      providerAccountId: true,
+      refresh_token: true,
+      access_token: true,
+      expires_at: true,
+      token_type: true,
+      scope: true,
+      id_token: true,
+      session_state: true,
+    }
+  });
+  
   const backup = {
     exportedAt: new Date().toISOString(),
-    version: '2.0',
+    version: '2.1',
     articles: articles,
     users: users,
+    accounts: accounts,
   };
   
   fs.writeFileSync('${TMP_DIR}/${DB_BACKUP_FILE}', JSON.stringify(backup, null, 2));

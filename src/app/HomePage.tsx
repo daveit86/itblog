@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { format } from "date-fns"
 import { calculateReadingTime } from "@/lib/utils"
@@ -46,38 +46,63 @@ const languageFlags: Record<string, string> = {
   ko: '🇰🇷'
 }
 
-export default function HomePage({ articles }: { articles: Article[] }) {
+export default function HomePage({ articles: initialArticles }: { articles: Article[] }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedLanguage, setSelectedLanguage] = useState<string>('all')
+  const [articles, setArticles] = useState<Article[]>(initialArticles)
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchCount, setSearchCount] = useState(0)
 
-  // Get unique languages from articles
-  const availableLanguages = useMemo(() => {
-    const langs = new Set(articles.map(a => a.language))
-    return Array.from(langs).sort()
-  }, [articles])
+  // Get unique languages from initial articles
+  const availableLanguages = [...new Set(initialArticles.map(a => a.language))].sort()
 
-  const filteredArticles = useMemo(() => {
-    let result = articles
-    
-    // Filter by language
-    if (selectedLanguage !== 'all') {
-      result = result.filter(article => article.language === selectedLanguage)
+  // Debounced search function
+  const performSearch = useCallback(async (query: string, language: string) => {
+    if (!query.trim()) {
+      // If no search query, filter by language only
+      let filtered = initialArticles
+      if (language !== 'all') {
+        filtered = initialArticles.filter(a => a.language === language)
+      }
+      setArticles(filtered)
+      setSearchCount(filtered.length)
+      return
     }
-    
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
-      result = result.filter(article => {
-        const titleMatch = article.title.toLowerCase().includes(query)
-        const contentMatch = article.content.toLowerCase().includes(query)
-        const excerptMatch = article.excerpt?.toLowerCase().includes(query) || false
-        const tagsMatch = article.tags?.toLowerCase().includes(query) || false
-        return titleMatch || contentMatch || excerptMatch || tagsMatch
-      })
+
+    setIsSearching(true)
+    try {
+      const params = new URLSearchParams()
+      params.set('q', query)
+      if (language !== 'all') {
+        params.set('language', language)
+      }
+
+      const res = await fetch(`/api/search?${params.toString()}`)
+      if (res.ok) {
+        const data = await res.json()
+        setArticles(data.articles)
+        setSearchCount(data.count)
+      }
+    } catch (error) {
+      console.error('Search error:', error)
+    } finally {
+      setIsSearching(false)
     }
-    
-    return result
-  }, [articles, searchQuery, selectedLanguage])
+  }, [initialArticles])
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      performSearch(searchQuery, selectedLanguage)
+    }, 300) // 300ms debounce
+
+    return () => clearTimeout(timer)
+  }, [searchQuery, selectedLanguage, performSearch])
+
+  // Filter articles by language when not searching
+  const filteredArticles = searchQuery.trim() ? articles : 
+    selectedLanguage === 'all' ? initialArticles : 
+    initialArticles.filter(a => a.language === selectedLanguage)
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,12 +123,12 @@ export default function HomePage({ articles }: { articles: Article[] }) {
           {/* Stats */}
           <div className="flex justify-center gap-8 mt-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-foreground">{articles.length}</span>
+              <span className="text-2xl font-bold text-foreground">{initialArticles.length}</span>
               <span>articles</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-2xl font-bold text-foreground">
-                {articles.reduce((acc, a) => acc + (a._count.comments || 0), 0)}
+                {initialArticles.reduce((acc, a) => acc + (a._count.comments || 0), 0)}
               </span>
               <span>comments</span>
             </div>
@@ -115,7 +140,7 @@ export default function HomePage({ articles }: { articles: Article[] }) {
           <div className="relative max-w-xl mx-auto">
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search articles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="block w-full pr-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -123,19 +148,26 @@ export default function HomePage({ articles }: { articles: Article[] }) {
             />
             {/* Search Icon */}
             <div className="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              <svg
-                className="h-5 w-5 text-muted-foreground"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+              {isSearching ? (
+                <svg className="animate-spin h-5 w-5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <svg
+                  className="h-5 w-5 text-muted-foreground"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              )}
             </div>
             {searchQuery && (
               <button
@@ -181,7 +213,7 @@ export default function HomePage({ articles }: { articles: Article[] }) {
           
           {(searchQuery || selectedLanguage !== 'all') && (
             <p className="text-center text-sm text-muted-foreground">
-              Found <span className="font-medium text-foreground">{filteredArticles.length}</span> {filteredArticles.length === 1 ? 'article' : 'articles'}
+              Found <span className="font-medium text-foreground">{searchQuery.trim() ? searchCount : filteredArticles.length}</span> {filteredArticles.length === 1 ? 'article' : 'articles'}
             </p>
           )}
         </div>

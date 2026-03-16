@@ -62,7 +62,7 @@ async function getAdminNotificationSettings() {
 
 interface CommentNotificationData {
   authorName: string
-  authorEmail: string
+  authorEmail?: string
   content: string
   articleTitle: string
   articleSlug: string

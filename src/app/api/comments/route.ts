@@ -8,6 +8,7 @@ import {
   checkRateLimit 
 } from "@/lib/rate-limit"
 import { generateFingerprint } from "@/lib/fingerprint"
+import { sendNewCommentNotification } from "@/lib/email"
 
 // Schema for anonymous comments - email is no longer required
 const commentSchema = z.object({
@@ -102,8 +103,15 @@ export async function POST(request: Request) {
       },
     })
 
-    // Note: Email notifications disabled since we don't collect emails anymore
-    // In the future, you could implement admin-only notifications via settings
+    // Send email notification to admin (don't await - don't block response)
+    sendNewCommentNotification({
+      authorName: data.authorName || 'Anonymous',
+      authorEmail: 'Not provided (anonymous comment)',
+      content: data.content,
+      articleTitle: article.title,
+      articleSlug: article.slug,
+      commentId: comment.id,
+    }).catch(err => console.error('Email notification failed:', err))
 
     return NextResponse.json(
       { 
