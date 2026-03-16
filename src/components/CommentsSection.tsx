@@ -12,6 +12,7 @@ type Comment = {
   createdAt: Date
   likes: number
   parentId: string | null
+  replies?: Comment[]
 }
 
 interface CommentsSectionProps {

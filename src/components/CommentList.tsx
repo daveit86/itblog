@@ -164,18 +164,10 @@ export default function CommentList({
   comments: Comment[]
   onReply?: (parentId: string) => void
 }) {
-  // Organize comments into parent-child structure
-  const organizedComments = comments.reduce((acc, comment) => {
-    if (!comment.parentId) {
-      acc.push({
-        ...comment,
-        replies: comments.filter(c => c.parentId === comment.id)
-      })
-    }
-    return acc
-  }, [] as Comment[])
+  // Comments already come with replies from the query, just use them directly
+  // No need to reorganize since the API returns hierarchical structure
 
-  if (organizedComments.length === 0) {
+  if (comments.length === 0) {
     return (
       <p className="text-muted-foreground text-center py-8">
         No comments yet. Be the first to comment!
@@ -185,7 +177,7 @@ export default function CommentList({
 
   return (
     <div className="space-y-6">
-      {organizedComments.map((comment) => (
+      {comments.map((comment) => (
         <CommentItem 
           key={comment.id} 
           comment={comment}
