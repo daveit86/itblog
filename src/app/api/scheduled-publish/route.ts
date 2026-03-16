@@ -1,8 +1,28 @@
 import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 
 export async function POST() {
   try {
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
+    // Check admin role
+    if (session.user?.role !== 'admin') {
+      return NextResponse.json(
+        { error: "Forbidden - Admin access required" },
+        { status: 403 }
+      )
+    }
+    
     const now = new Date()
     
     // Find all scheduled articles that should be published
@@ -26,7 +46,6 @@ export async function POST() {
           publishAt: null
         }
       })
-      console.log(`Published scheduled article: ${article.title}`)
     }
 
     return NextResponse.json({ 

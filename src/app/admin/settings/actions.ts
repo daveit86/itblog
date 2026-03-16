@@ -5,70 +5,72 @@ import { getServerSession } from "next-auth"
 import prisma from "@/lib/prisma"
 import bcrypt from 'bcryptjs'
 
-export async function updateProfile(formData: FormData): Promise<{ error?: string; success?: boolean }> {
-  console.log('updateProfile called')
+// Helper function to check admin authorization
+async function checkAdminAuth() {
   const session = await getServerSession(authOptions)
   
-  console.log('Session:', session)
-  
   if (!session?.user?.email) {
-    console.log('No session or email found')
-    return { error: "Unauthorized" }
+    return { error: "Unauthorized", session: null, email: null }
+  }
+
+  if (session.user?.role !== 'admin') {
+    return { error: "Forbidden - Admin access required", session: null, email: null }
+  }
+
+  return { error: null, session, email: session.user.email }
+}
+
+export async function updateProfile(formData: FormData): Promise<{ error?: string; success?: boolean }> {
+  const auth = await checkAdminAuth()
+  
+  if (auth.error) {
+    return { error: auth.error }
   }
 
   const name = formData.get("name") as string
   const image = formData.get("image") as string
   const bio = formData.get("bio") as string
-  
-  console.log('Form data:', { name, image, bio, email: session.user.email })
 
   try {
     // Try to find user by email first
     let user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: auth.email! }
     })
-    
-    console.log('Found user:', user)
 
     if (!user) {
-      console.log('Creating new user...')
       // Create user if doesn't exist (for credentials auth)
       user = await prisma.user.create({
         data: {
-          email: session.user.email,
+          email: auth.email!,
           name: name || null,
           image: image || null,
           bio: bio || null,
           role: 'admin',
         }
       })
-      console.log('User created:', user)
     } else {
-      console.log('Updating existing user...')
       // Update existing user
       await prisma.user.update({
-        where: { email: session.user.email },
+        where: { email: auth.email! },
         data: { 
           name: name || null,
           image: image || null,
           bio: bio || null
         },
       })
-      console.log('User updated successfully')
     }
 
     return { success: true }
   } catch (error) {
-    console.error('Failed to update profile:', error)
-    return { error: "Failed to update profile: " + (error instanceof Error ? error.message : String(error)) }
+    return { error: "Failed to update profile" }
   }
 }
 
 export async function updateEmail(formData: FormData): Promise<{ error?: string; success?: boolean }> {
-  const session = await getServerSession(authOptions)
+  const auth = await checkAdminAuth()
   
-  if (!session?.user?.email) {
-    return { error: "Unauthorized" }
+  if (auth.error) {
+    return { error: auth.error }
   }
 
   const newEmail = formData.get("email") as string
@@ -80,7 +82,7 @@ export async function updateEmail(formData: FormData): Promise<{ error?: string;
 
   // Find user by current email
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: auth.email! },
     include: { accounts: true }
   })
 
@@ -104,16 +106,15 @@ export async function updateEmail(formData: FormData): Promise<{ error?: string;
     })
     return { success: true }
   } catch (error) {
-    console.error('Failed to update email:', error)
     return { error: "Failed to update email" }
   }
 }
 
 export async function updatePassword(formData: FormData): Promise<{ error?: string; success?: boolean }> {
-  const session = await getServerSession(authOptions)
+  const auth = await checkAdminAuth()
   
-  if (!session?.user?.email) {
-    return { error: "Unauthorized" }
+  if (auth.error) {
+    return { error: auth.error }
   }
 
   const currentPassword = formData.get("currentPassword") as string
@@ -135,7 +136,7 @@ export async function updatePassword(formData: FormData): Promise<{ error?: stri
   try {
     // Find user by email
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: auth.email! },
       include: { accounts: true }
     })
 
@@ -172,16 +173,15 @@ export async function updatePassword(formData: FormData): Promise<{ error?: stri
 
     return { success: true }
   } catch (error) {
-    console.error('Failed to update password:', error)
     return { error: "Failed to update password" }
   }
 }
 
 export async function updateNotificationSettings(formData: FormData): Promise<{ error?: string; success?: boolean }> {
-  const session = await getServerSession(authOptions)
+  const auth = await checkAdminAuth()
   
-  if (!session?.user?.email) {
-    return { error: "Unauthorized" }
+  if (auth.error) {
+    return { error: auth.error }
   }
 
   const notifyOnComments = formData.get("notifyOnComments") === "on"
@@ -191,7 +191,7 @@ export async function updateNotificationSettings(formData: FormData): Promise<{ 
   try {
     // Find user by email first
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: auth.email! }
     })
 
     if (!user) {
@@ -208,7 +208,6 @@ export async function updateNotificationSettings(formData: FormData): Promise<{ 
     })
     return { success: true }
   } catch (error) {
-    console.error('Failed to update notification settings:', error)
     return { error: "Failed to update notification settings" }
   }
 }

@@ -24,10 +24,13 @@ export default function SignInPage() {
         redirect: false,
       })
 
-      console.log("SignIn result:", result)
       if (result?.error) {
-        console.log("SignIn error:", result.error)
-        setError(`Error: ${result.error}`)
+        // Check if it's a rate limit error
+        if (result.error.includes("Too many login attempts")) {
+          setError("Too many login attempts. Please try again in 15 minutes.")
+        } else {
+          setError("Invalid email or password")
+        }
       } else {
         router.push("/admin")
         router.refresh()

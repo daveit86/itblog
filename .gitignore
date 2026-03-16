@@ -56,3 +56,4 @@ next-env.d.ts
 /backups/
 *.backup
 *.sql
+.env.production.backup

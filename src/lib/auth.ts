@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import prisma from "@/lib/prisma"
 import bcrypt from 'bcryptjs'
+import { loginLimiter, checkRateLimit } from "@/lib/rate-limit"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,6 +15,12 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null
+        }
+
+        // Check rate limit
+        const rateLimitResult = await checkRateLimit(loginLimiter, credentials.email)
+        if (!rateLimitResult.success) {
+          throw new Error("Too many login attempts. Please try again later.")
         }
 
         // Find user by email
