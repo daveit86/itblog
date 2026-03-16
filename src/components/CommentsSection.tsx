@@ -29,8 +29,10 @@ export default function CommentsSection({ articleId, comments }: CommentsSection
 
   const handleReplySuccess = () => {
     setReplyingTo(null)
-    // Refresh the page to show the new reply
-    window.location.reload()
+    // Wait 2 seconds so user can see the success message, then refresh
+    setTimeout(() => {
+      window.location.reload()
+    }, 2000)
   }
 
   return (
