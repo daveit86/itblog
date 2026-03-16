@@ -22,21 +22,23 @@ export async function POST(
     // Use session ID if logged in, otherwise use fingerprint
     const userId = session?.user?.id || fingerprint
     
-    // Check rate limit - 10 likes per minute per user
-    const rateLimitResult = await checkRateLimit(likeLimiter, userId)
-    if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { 
-          error: "Rate limit exceeded. Please slow down.",
-          retryAfter: Math.ceil((rateLimitResult.msBeforeNext || 0) / 1000)
-        },
-        { 
-          status: 429,
-          headers: {
-            'Retry-After': String(Math.ceil((rateLimitResult.msBeforeNext || 0) / 1000))
+    // Apply rate limiting only for anonymous users
+    if (!session?.user?.id) {
+      const rateLimitResult = await checkRateLimit(likeLimiter, userId)
+      if (!rateLimitResult.success) {
+        return NextResponse.json(
+          { 
+            error: "Rate limit exceeded. Please slow down.",
+            retryAfter: Math.ceil((rateLimitResult.msBeforeNext || 0) / 1000)
+          },
+          { 
+            status: 429,
+            headers: {
+              'Retry-After': String(Math.ceil((rateLimitResult.msBeforeNext || 0) / 1000))
+            }
           }
-        }
-      )
+        )
+      }
     }
     
     // Check if user already liked this comment (prevent duplicate likes)

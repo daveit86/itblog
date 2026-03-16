@@ -5,7 +5,6 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { 
   anonymousCommentLimiter, 
-  loggedInCommentLimiter, 
   checkRateLimit 
 } from "@/lib/rate-limit"
 import { generateFingerprint } from "@/lib/fingerprint"
@@ -60,35 +59,32 @@ export async function POST(request: Request) {
     
     let fingerprintHash: string | null = null
     let sessionId: string | null = null
-    let rateLimitResult
 
     if (session?.user?.id) {
-      // Logged-in user: use user ID for rate limiting
+      // Logged-in user: no rate limiting
       sessionId = session.user.id
-      rateLimitResult = await checkRateLimit(loggedInCommentLimiter, sessionId)
     } else {
-      // Anonymous user: use fingerprint for rate limiting
+      // Anonymous user: apply rate limiting
       fingerprintHash = generateFingerprint(request)
-      rateLimitResult = await checkRateLimit(anonymousCommentLimiter, fingerprintHash)
-    }
-
-    // Check rate limit
-    if (!rateLimitResult.success) {
-      const retryAfter = Math.ceil((rateLimitResult.msBeforeNext || 0) / 1000)
-      const minutes = Math.ceil(retryAfter / 60)
+      const rateLimitResult = await checkRateLimit(anonymousCommentLimiter, fingerprintHash)
       
-      return NextResponse.json(
-        { 
-          error: `Rate limit exceeded. Please wait ${minutes} minute${minutes > 1 ? 's' : ''} before commenting again.`,
-          retryAfter: retryAfter
-        },
-        { 
-          status: 429,
-          headers: {
-            'Retry-After': String(retryAfter)
+      if (!rateLimitResult.success) {
+        const retryAfter = Math.ceil((rateLimitResult.msBeforeNext || 0) / 1000)
+        const minutes = Math.ceil(retryAfter / 60)
+        
+        return NextResponse.json(
+          { 
+            error: `Rate limit exceeded. Please wait ${minutes} minute${minutes > 1 ? 's' : ''} before commenting again.`,
+            retryAfter: retryAfter
+          },
+          { 
+            status: 429,
+            headers: {
+              'Retry-After': String(retryAfter)
+            }
           }
-        }
-      )
+        )
+      }
     }
 
     // Create comment - always pending moderation
