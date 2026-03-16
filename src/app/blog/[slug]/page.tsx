@@ -405,7 +405,7 @@ export default async function ArticlePage({
         )}
 
         {/* Comments Section */}
-        <CommentsSection articleId={article.id} comments={article.comments} />
+        <CommentsSection articleId={article.id} initialComments={article.comments} />
       </main>
 
       {/* Footer */}

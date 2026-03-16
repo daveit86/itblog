@@ -1,8 +1,22 @@
 import prisma from "@/lib/prisma"
 import HomePage from "./HomePage"
 
+interface Article {
+  id: string
+  title: string
+  slug: string
+  excerpt: string | null
+  content: string
+  tags: string | null
+  language: string
+  createdAt: Date
+  _count: {
+    comments: number
+  }
+}
+
 export default async function Home() {
-  let articles: any[] = []
+  let articles: Article[] = []
   
   try {
     articles = await prisma.article.findMany({

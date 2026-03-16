@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { format } from "date-fns"
 import DOMPurify from 'isomorphic-dompurify'
 
@@ -15,7 +15,7 @@ type Comment = {
   replies?: Comment[]
 }
 
-function CommentItem({ 
+const CommentItem = memo(function CommentItem({ 
   comment, 
   depth = 0,
   onReply,
@@ -155,9 +155,9 @@ function CommentItem({
       )}
     </div>
   )
-}
+})
 
-export default function CommentList({ 
+function CommentListComponent({ 
   comments,
   onReply 
 }: { 
@@ -187,3 +187,5 @@ export default function CommentList({
     </div>
   )
 }
+
+export default memo(CommentListComponent)

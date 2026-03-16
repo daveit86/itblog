@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import CommentForm from "./CommentForm"
 import CommentList from "./CommentList"
 
@@ -17,21 +17,39 @@ type Comment = {
 
 interface CommentsSectionProps {
   articleId: string
-  comments: Comment[]
+  initialComments: Comment[]
 }
 
-export default function CommentsSection({ articleId, comments }: CommentsSectionProps) {
+export default function CommentsSection({ articleId, initialComments }: CommentsSectionProps) {
+  const [comments, setComments] = useState<Comment[]>(initialComments)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  // Fetch fresh comments from API
+  const refreshComments = useCallback(async () => {
+    setIsRefreshing(true)
+    try {
+      const res = await fetch(`/api/comments?articleId=${articleId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setComments(data)
+      }
+    } catch (error) {
+      console.error('Failed to refresh comments:', error)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }, [articleId])
 
   const handleReply = (commentId: string) => {
     setReplyingTo(commentId)
   }
 
-  const handleReplySuccess = () => {
+  const handleReplySuccess = async () => {
     setReplyingTo(null)
-    // Wait 2 seconds so user can see the success message, then refresh
+    // Wait 2 seconds so user can see the success message
     setTimeout(() => {
-      window.location.reload()
+      refreshComments()
     }, 2000)
   }
 
@@ -45,6 +63,11 @@ export default function CommentsSection({ articleId, comments }: CommentsSection
         <span className="text-sm font-normal text-muted-foreground">
           ({comments.length})
         </span>
+        {isRefreshing && (
+          <span className="ml-2 text-sm text-muted-foreground animate-pulse">
+            Refreshing...
+          </span>
+        )}
       </h2>
 
       {!replyingTo && <CommentForm articleId={articleId} />}
