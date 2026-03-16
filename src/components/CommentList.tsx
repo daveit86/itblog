@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { format } from "date-fns"
 import DOMPurify from 'isomorphic-dompurify'
 
@@ -28,19 +28,56 @@ function CommentItem({
 }) {
   const [isLiked, setIsLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(comment.likes || 0)
+  const [error, setError] = useState<string | null>(null)
+
+  // Check if user has already liked this comment
+  useEffect(() => {
+    const checkLikeStatus = async () => {
+      try {
+        const res = await fetch(`/api/comments/${comment.id}/like`)
+        if (res.ok) {
+          const data = await res.json()
+          setIsLiked(data.hasLiked)
+          setLikeCount(data.likes)
+        }
+      } catch {
+        // Silently fail - not critical
+      }
+    }
+    checkLikeStatus()
+  }, [comment.id])
 
   const handleLike = async () => {
-    if (isLiked) return
+    if (isLiked) {
+      setError("You have already liked this comment")
+      setTimeout(() => setError(null), 3000)
+      return
+    }
+    
+    setError(null)
     
     try {
       const res = await fetch(`/api/comments/${comment.id}/like`, { method: 'POST' })
+      const data = await res.json()
+      
       if (res.ok) {
-        setLikeCount(prev => prev + 1)
+        setLikeCount(data.likes)
         setIsLiked(true)
         onLike?.(comment.id)
+      } else {
+        // Handle errors
+        if (res.status === 429) {
+          setError("Rate limit exceeded. Please slow down.")
+        } else if (data.error) {
+          setError(data.error)
+        } else {
+          setError("Failed to like comment")
+        }
+        setTimeout(() => setError(null), 5000)
       }
-    } catch (error) {
-      console.error('Failed to like comment:', error)
+    } catch {
+      setError("Failed to like comment. Please try again.")
+      setTimeout(() => setError(null), 5000)
     }
   }
 
@@ -64,6 +101,13 @@ function CommentItem({
         
         <p className="mt-3 text-foreground/80 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(comment.content) }} />
         
+        {/* Error message */}
+        {error && (
+          <div className="mt-2 text-sm text-red-500 bg-red-500/10 px-3 py-1 rounded">
+            {error}
+          </div>
+        )}
+        
         <div className="mt-3 flex items-center gap-4">
           <button
             onClick={handleLike}
@@ -73,6 +117,7 @@ function CommentItem({
                 ? 'text-primary' 
                 : 'text-muted-foreground hover:text-primary'
             }`}
+            title={isLiked ? "You have already liked this comment" : "Like this comment"}
           >
             <svg className="w-4 h-4" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />

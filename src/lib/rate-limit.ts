@@ -73,6 +73,13 @@ export const adminLimiter = new RateLimiterMemory({
   duration: 60, // 1 minute
 })
 
+// Comment likes: 10 per minute per user
+export const likeLimiter = new RateLimiterMemory({
+  keyPrefix: 'like',
+  points: 10,
+  duration: 60, // 1 minute
+})
+
 export interface RateLimitResult {
   success: boolean
   limit: number
