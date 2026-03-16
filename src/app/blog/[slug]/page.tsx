@@ -155,7 +155,16 @@ export default async function ArticlePage({
       comments: isAdmin ? {
         orderBy: { createdAt: 'desc' }
       } : {
-        where: { approved: true },
+        where: { 
+          approved: true,
+          parentId: null // Only fetch top-level approved comments
+        },
+        include: {
+          replies: {
+            where: { approved: true }, // Only include approved replies
+            orderBy: { createdAt: 'asc' }
+          }
+        },
         orderBy: { createdAt: 'desc' }
       }
     }
