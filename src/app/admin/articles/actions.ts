@@ -16,6 +16,11 @@ export async function createArticle(formData: FormData): Promise<{ error?: strin
     return { error: "Unauthorized" }
   }
 
+  // Only admins can create articles
+  if (session.user?.role !== 'admin') {
+    return { error: "Forbidden - Admin access required" }
+  }
+
   const title = formData.get("title") as string
   const slug = formData.get("slug") as string
   const excerpt = formData.get("excerpt") as string | null
@@ -25,6 +30,17 @@ export async function createArticle(formData: FormData): Promise<{ error?: strin
 
   if (!title || !slug || !content) {
     return { error: "Required fields missing" }
+  }
+
+  // Input length validation
+  if (title.length > 200) {
+    return { error: "Title must be less than 200 characters" }
+  }
+  if (content.length > 100000) {
+    return { error: "Content must be less than 100KB" }
+  }
+  if (excerpt && excerpt.length > 500) {
+    return { error: "Excerpt must be less than 500 characters" }
   }
 
   const existingArticle = await prisma.article.findUnique({
@@ -61,6 +77,11 @@ export async function publishArticle(articleId: string): Promise<{ error?: strin
     return { error: "Unauthorized" }
   }
 
+  // Only admins can publish articles
+  if (session.user?.role !== 'admin') {
+    return { error: "Forbidden - Admin access required" }
+  }
+
   try {
     await prisma.article.update({
       where: { id: articleId },
@@ -92,6 +113,11 @@ export async function unpublishArticle(articleId: string): Promise<{ error?: str
   
   if (!session) {
     return { error: "Unauthorized" }
+  }
+
+  // Only admins can unpublish articles
+  if (session.user?.role !== 'admin') {
+    return { error: "Forbidden - Admin access required" }
   }
 
   try {
@@ -127,6 +153,11 @@ export async function deleteArticle(articleId: string): Promise<{ error?: string
     return { error: "Unauthorized" }
   }
 
+  // Only admins can delete articles
+  if (session.user?.role !== 'admin') {
+    return { error: "Forbidden - Admin access required" }
+  }
+
   try {
     // First, fetch the article to get its content and extract upload references
     const article = await prisma.article.findUnique({
@@ -158,10 +189,8 @@ export async function deleteArticle(articleId: string): Promise<{ error?: string
       try {
         const filepath = join(uploadsDir, filename)
         await unlink(filepath)
-        console.log(`Deleted upload: ${filename}`)
-      } catch (error) {
-        // Log error but don't fail the deletion if file doesn't exist
-        console.warn(`Failed to delete upload ${filename}:`, error)
+      } catch {
+        // Silently ignore errors - file may not exist
       }
     })
 

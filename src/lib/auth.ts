@@ -12,27 +12,20 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log("[Auth] Authorize called with email:", credentials?.email)
-        
         if (!credentials?.email || !credentials?.password) {
-          console.log("[Auth] Missing credentials")
           return null
         }
 
         // Find user by email
-        console.log("[Auth] Looking up user...")
         const user = await prisma.user.findUnique({
           where: { email: credentials.email }
         })
 
         if (!user) {
-          console.log("[Auth] User not found")
           return null
         }
-        console.log("[Auth] User found:", user.id)
 
         // Verify password from account
-        console.log("[Auth] Looking up account...")
         const account = await prisma.account.findFirst({
           where: {
             userId: user.id,
@@ -41,19 +34,15 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!account || !account.access_token) {
-          console.log("[Auth] Account not found or no access_token")
           return null
         }
-        console.log("[Auth] Account found, checking password...")
 
         const isValid = await bcrypt.compare(credentials.password, account.access_token)
-        console.log("[Auth] Password valid:", isValid)
         
         if (!isValid) {
           return null
         }
 
-        console.log("[Auth] Login successful!")
         return {
           id: user.id,
           name: user.name,

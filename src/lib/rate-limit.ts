@@ -1,5 +1,29 @@
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible'
 
+/**
+ * ⚠️ SECURITY WARNING FOR SERVERLESS ENVIRONMENTS (Vercel, AWS Lambda, etc.):
+ * 
+ * RateLimiterMemory stores limits in process memory. In serverless environments,
+ * each function invocation may run on a different instance, causing rate limits
+ * to reset frequently. For production, consider using:
+ * 
+ * 1. Redis-based rate limiting (rate-limiter-flexible with ioredis)
+ * 2. Vercel Edge Config for distributed rate limiting
+ * 3. Upstash Redis (serverless-friendly)
+ * 
+ * Example with Redis:
+ * import { RateLimiterRedis } from 'rate-limiter-flexible'
+ * import Redis from 'ioredis'
+ * 
+ * const redisClient = new Redis(process.env.REDIS_URL)
+ * export const loginLimiter = new RateLimiterRedis({
+ *   storeClient: redisClient,
+ *   keyPrefix: 'login',
+ *   points: 5,
+ *   duration: 15 * 60,
+ * })
+ */
+
 // Login attempts: 5 per 15 minutes per IP
 export const loginLimiter = new RateLimiterMemory({
   keyPrefix: 'login',
@@ -11,6 +35,20 @@ export const loginLimiter = new RateLimiterMemory({
 export const commentLimiter = new RateLimiterMemory({
   keyPrefix: 'comment',
   points: 3,
+  duration: 60 * 60, // 1 hour
+})
+
+// Anonymous comments: 3 per hour per fingerprint
+export const anonymousCommentLimiter = new RateLimiterMemory({
+  keyPrefix: 'anon_comment',
+  points: 3,
+  duration: 60 * 60, // 1 hour
+})
+
+// Logged-in user comments: 10 per hour per user
+export const loggedInCommentLimiter = new RateLimiterMemory({
+  keyPrefix: 'user_comment',
+  points: 10,
   duration: 60 * 60, // 1 hour
 })
 
@@ -70,9 +108,16 @@ export async function checkRateLimit(
   }
 }
 
-// Get client IP from request
+// Get client IP from request with proxy awareness
 export function getClientIp(request: Request): string {
-  // Try to get IP from headers (works with proxies)
+  // In production with Vercel, use the x-vercel-forwarded-for header
+  // which is more trustworthy as it's set by Vercel's edge network
+  const vercelForwarded = request.headers.get('x-vercel-forwarded-for')
+  if (vercelForwarded) {
+    return vercelForwarded.split(',')[0].trim()
+  }
+  
+  // Fallback to standard headers (may be spoofed if not behind a trusted proxy)
   const forwarded = request.headers.get('x-forwarded-for')
   const realIp = request.headers.get('x-real-ip')
   
@@ -84,6 +129,6 @@ export function getClientIp(request: Request): string {
     return realIp
   }
   
-  // Fallback to a default (in production, you'd want better IP detection)
+  // Last resort fallback
   return 'unknown'
 }

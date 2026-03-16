@@ -6,8 +6,8 @@ import CommentList from "./CommentList"
 
 type Comment = {
   id: string
-  authorName: string
-  authorEmail: string
+  authorName: string | null
+  authorEmail: string | null
   content: string
   createdAt: Date
   likes: number

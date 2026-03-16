@@ -1,10 +1,18 @@
 import prisma from "@/lib/prisma"
 
 export async function GET() {
-  const articles = await prisma.article.findMany({
-    where: { published: true },
-    select: { slug: true, updatedAt: true },
-  })
+  let articles: { slug: string; updatedAt: Date }[] = []
+  
+  try {
+    articles = await prisma.article.findMany({
+      where: { published: true },
+      select: { slug: true, updatedAt: true },
+    })
+  } catch {
+    // Database not available during build or other error
+    // Return empty sitemap - will be populated at runtime
+    articles = []
+  }
 
   const blogUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
 

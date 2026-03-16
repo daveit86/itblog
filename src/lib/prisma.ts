@@ -1,20 +1,18 @@
-import { PrismaClient } from '@prisma/client'
-import { PrismaLibSql } from '@prisma/adapter-libsql'
+import { PrismaClient } from '../../generated/prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool } from 'pg'
 
-const prismaClientSingleton = () => {
-  const dbUrl = process.env.DATABASE_URL || 'file:/home/dave/Scrivania/OpenCode/itblog/prisma/dev.db'
-  const adapter = new PrismaLibSql({
-    url: dbUrl,
-  })
-  return new PrismaClient({ adapter })
+const connectionString = process.env.DATABASE_URL
+
+const pool = new Pool({ connectionString })
+const adapter = new PrismaPg(pool)
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
 }
 
-declare const globalThis: {
-  prismaGlobal: ReturnType<typeof prismaClientSingleton>;
-} & typeof global;
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter })
 
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 export default prisma
-
-if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma

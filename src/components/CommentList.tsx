@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { format } from "date-fns"
+import DOMPurify from 'isomorphic-dompurify'
 
 type Comment = {
   id: string
-  authorName: string
-  authorEmail: string
+  authorName: string | null
+  authorEmail: string | null
   content: string
   createdAt: Date
   likes: number
@@ -49,10 +50,10 @@ function CommentItem({
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary-hover/20 flex items-center justify-center text-sm font-semibold text-primary">
-              {comment.authorName.charAt(0).toUpperCase()}
+              {(comment.authorName || 'A').charAt(0).toUpperCase()}
             </div>
             <div>
-              <span className="font-semibold text-foreground">{comment.authorName}</span>
+              <span className="font-semibold text-foreground">{comment.authorName || 'Anonymous'}</span>
               <span className="text-muted-foreground mx-2">·</span>
               <span className="text-sm text-muted-foreground">
                 {format(new Date(comment.createdAt), 'MMM d, yyyy')}
@@ -61,7 +62,7 @@ function CommentItem({
           </div>
         </div>
         
-        <p className="mt-3 text-foreground/80 whitespace-pre-wrap">{comment.content}</p>
+        <p className="mt-3 text-foreground/80 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(comment.content) }} />
         
         <div className="mt-3 flex items-center gap-4">
           <button

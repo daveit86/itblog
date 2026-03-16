@@ -36,19 +36,20 @@ export default function CommentForm({
         body: formData,
       })
 
+      const data = await res.json()
+
       if (res.ok) {
         setStatus('success')
-        setMessage(isReply ? "Reply submitted!" : "Comment submitted! It will appear after moderation.")
+        setMessage(data.message || "Comment submitted successfully! It will appear after moderation.")
         ;(e.target as HTMLFormElement).reset()
         onSuccess?.()
       } else {
-        const data = await res.json()
         setStatus('error')
-        setMessage(data.error || "Failed to submit comment")
+        setMessage(data.error || "Failed to submit comment. Please try again.")
       }
     } catch {
       setStatus('error')
-      setMessage("Failed to submit comment")
+      setMessage("Failed to submit comment. Please check your connection and try again.")
     }
   }
 
@@ -59,43 +60,45 @@ export default function CommentForm({
       </h3>
       
       {status === 'success' && (
-        <div className="bg-green-500/10 border border-green-500/20 text-green-500 px-4 py-3 rounded mb-4">
-          {message}
+        <div className="bg-green-500/10 border border-green-500/20 text-green-600 px-4 py-3 rounded mb-4">
+          <p className="font-medium">✓ {message}</p>
+          <p className="text-sm mt-1 opacity-80">Thank you for your contribution!</p>
         </div>
       )}
       
       {status === 'error' && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded mb-4">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-600 px-4 py-3 rounded mb-4">
           {message}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Honeypot field - invisible to humans, bots will fill it */}
+        <div style={{ display: 'none' }} aria-hidden="true">
+          <label htmlFor="website">Website</label>
+          <input 
+            type="text" 
+            id="website" 
+            name="honeypot" 
+            tabIndex={-1} 
+            autoComplete="off"
+          />
+        </div>
+
         <div>
           <label htmlFor="authorName" className="block text-sm font-medium text-foreground mb-1">
-            Name *
+            Name <span className="text-muted-foreground font-normal">(optional)</span>
           </label>
           <input
             type="text"
             name="authorName"
             id="authorName"
-            required
-            className="w-full rounded-md border border-border bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Your name or leave blank for anonymous"
+            className="w-full rounded-md border border-border bg-card px-3 py-2 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary"
           />
-        </div>
-
-        <div>
-          <label htmlFor="authorEmail" className="block text-sm font-medium text-foreground mb-1">
-            Email *
-          </label>
-          <input
-            type="email"
-            name="authorEmail"
-            id="authorEmail"
-            required
-            className="w-full rounded-md border border-border bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-          <p className="mt-1 text-xs text-muted-foreground">Won't be published</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Leave blank to post anonymously
+          </p>
         </div>
 
         <div>
@@ -107,11 +110,16 @@ export default function CommentForm({
             id="content"
             required
             rows={4}
-            className="w-full rounded-md border border-border bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+            maxLength={5000}
+            placeholder="Share your thoughts..."
+            className="w-full rounded-md border border-border bg-card px-3 py-2 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
           />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Max 5000 characters. Comments are moderated before appearing.
+          </p>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             type="submit"
             disabled={status === 'submitting'}
@@ -129,6 +137,11 @@ export default function CommentForm({
             </button>
           )}
         </div>
+
+        <p className="text-xs text-muted-foreground pt-2">
+          💡 <strong>Privacy note:</strong> We don't collect your email or any personal information. 
+          All comments are moderated before publication.
+        </p>
       </form>
     </div>
   )

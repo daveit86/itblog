@@ -10,6 +10,11 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  // Only admins can update articles
+  if (session.user?.role !== 'admin') {
+    return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
+  }
+
   const formData = await request.formData()
   
   const id = formData.get("id") as string
@@ -26,6 +31,26 @@ export async function PUT(request: Request) {
 
   if (!id || !title || !slug || !content) {
     return NextResponse.json({ error: "Required fields missing" }, { status: 400 })
+  }
+
+  // Input length validation
+  if (title.length > 200) {
+    return NextResponse.json({ error: "Title must be less than 200 characters" }, { status: 400 })
+  }
+  if (content.length > 100000) {
+    return NextResponse.json({ error: "Content must be less than 100KB" }, { status: 400 })
+  }
+  if (excerpt && excerpt.length > 500) {
+    return NextResponse.json({ error: "Excerpt must be less than 500 characters" }, { status: 400 })
+  }
+  if (tags && tags.length > 500) {
+    return NextResponse.json({ error: "Tags must be less than 500 characters" }, { status: 400 })
+  }
+  if (metaTitle && metaTitle.length > 200) {
+    return NextResponse.json({ error: "Meta title must be less than 200 characters" }, { status: 400 })
+  }
+  if (metaDescription && metaDescription.length > 500) {
+    return NextResponse.json({ error: "Meta description must be less than 500 characters" }, { status: 400 })
   }
 
   // Validate slug format
@@ -65,6 +90,11 @@ export async function DELETE(request: Request) {
   
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  // Only admins can delete articles
+  if (session.user?.role !== 'admin') {
+    return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
   }
 
   const { searchParams } = new URL(request.url)

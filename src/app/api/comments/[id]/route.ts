@@ -10,6 +10,11 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  // Only admins can approve/disapprove comments
+  if (session.user?.role !== 'admin') {
+    return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
+  }
+
   const body = await request.json()
   const { id, approved } = body
 
@@ -26,6 +31,11 @@ export async function DELETE(request: Request) {
   
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  // Only admins can delete comments
+  if (session.user?.role !== 'admin') {
+    return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
   }
 
   const { searchParams } = new URL(request.url)

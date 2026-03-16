@@ -3,13 +3,15 @@
 import Link from "next/link"
 import { format } from "date-fns"
 import { useState } from "react"
+import DOMPurify from 'isomorphic-dompurify'
 import CommentActions from "./CommentActions"
 import BulkCommentActions from "./BulkCommentActions"
 
 interface Comment {
   id: string
-  authorName: string
-  authorEmail: string
+  authorName: string | null
+  authorEmail: string | null
+  fingerprintHash?: string | null
   content: string
   approved: boolean
   createdAt: Date
@@ -116,7 +118,7 @@ export default function CommentsClient({ pendingComments, approvedComments }: Co
                 </>
               ) : (
                 <>
-                  <span className="whitespace-pre-wrap">{comment.content}</span>
+                  <span className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(comment.content) }} />
                   {shouldTruncate && (
                     <button 
                       onClick={() => setExpandedId(null)}

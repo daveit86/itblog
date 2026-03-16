@@ -1,9 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
@@ -100,21 +101,24 @@ model ArticleVersion {
 }
 
 model Comment {
-  id           String    @id @default(cuid())
-  authorName   String
-  authorEmail  String
-  content      String
-  approved     Boolean   @default(false)
-  parentId     String?
-  parent       Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  replies      Comment[] @relation("CommentReplies")
-  likes        Int       @default(0)
-  createdAt    DateTime  @default(now())
-  article      Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  articleId    String
+  id              String    @id @default(cuid())
+  authorName      String?   // Optional - anonymous comments allowed
+  authorEmail     String?   // Optional - no longer required
+  fingerprintHash String?   // For anonymous rate limiting (hashed, not identifiable)
+  sessionId       String?   // For logged-in user tracking
+  content         String
+  approved        Boolean   @default(false)  // Pending moderation by default
+  parentId        String?
+  parent          Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies         Comment[] @relation("CommentReplies")
+  likes           Int       @default(0)
+  createdAt       DateTime  @default(now())
+  article         Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId       String
   
   @@index([articleId])
   @@index([parentId])
+  @@index([fingerprintHash])  // For rate limiting queries
 }
 
 model AuditLog {
