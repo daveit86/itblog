@@ -17,16 +17,50 @@ export const createTransporter = async () => {
 
   // Check if SMTP is configured in database
   if (admin?.smtpHost && admin?.smtpUser && admin?.smtpPass) {
-    console.log('📧 Using database SMTP configuration:', admin.smtpHost)
-    return nodemailer.createTransport({
+    console.log('📧 Using database SMTP configuration:', admin.smtpHost, 'Port:', admin.smtpPort, 'Secure:', admin.smtpSecure)
+
+    // Gmail smtp-relay requires specific configuration
+    const isGmail = admin.smtpHost?.includes('gmail.com') || admin.smtpHost?.includes('google.com')
+    const port = admin.smtpPort || 587
+    const secure = admin.smtpSecure || false
+
+    const transportConfig: any = {
       host: admin.smtpHost,
-      port: admin.smtpPort || 587,
-      secure: admin.smtpSecure || false,
+      port: port,
+      secure: secure,
       auth: {
         user: admin.smtpUser,
         pass: admin.smtpPass,
       },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+    }
+
+    // For Gmail on port 587, use requireTLS instead of secure
+    if (isGmail && port === 587) {
+      transportConfig.secure = false
+      transportConfig.requireTLS = true
+      transportConfig.tls = {
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2'
+      }
+    } else if (secure) {
+      // For SSL/TLS connections
+      transportConfig.tls = {
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2'
+      }
+    }
+
+    console.log('📧 Creating transporter with config:', {
+      host: transportConfig.host,
+      port: transportConfig.port,
+      secure: transportConfig.secure,
+      requireTLS: transportConfig.requireTLS,
     })
+
+    return nodemailer.createTransport(transportConfig)
   }
 
   // Fallback to environment variables
@@ -258,15 +292,18 @@ export async function sendNewCommentNotification(data: CommentNotificationData) 
   try {
     // Check if admin wants to receive comment notifications
     const settings = await getAdminNotificationSettings()
-    
+
+    console.log('📧 Notification settings:', settings)
+
     if (!settings.notifyOnComments) {
       console.log('📧 Comment notification skipped: admin has disabled comment notifications')
       return { success: true, skipped: true }
     }
 
     console.log('📧 Sending comment notification to:', settings.email)
-    
+
     const transporter = await createTransporter()
+    console.log('📧 Transporter created successfully')
     
     const blogUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     const adminUrl = `${blogUrl}/admin/comments`
@@ -335,9 +372,9 @@ Comment ID: ${data.commentId}
     }
 
     const info = await transporter.sendMail(mailOptions)
-    
+
     // For test accounts, log the preview URL
-    const previewUrl = nodemailer.getTestMessageUrl(info)
+    const previewUrl = nodemailer.getTestMessageUrl(info as any)
     if (previewUrl) {
       console.log('📧 Test email sent!')
       console.log('📧 Preview URL:', previewUrl)
@@ -346,7 +383,7 @@ Comment ID: ${data.commentId}
       console.log('✅ Email sent successfully to:', settings.email)
       console.log('📧 Message ID:', info.messageId)
     }
-    
+
     return { success: true, messageId: info.messageId, previewUrl }
   } catch (error) {
     console.error('❌ Failed to send email notification:', error)
@@ -413,15 +450,15 @@ You're receiving this because you have publish notifications enabled in your set
     }
 
     const info = await transporter.sendMail(mailOptions)
-    
-    const previewUrl = nodemailer.getTestMessageUrl(info)
+
+    const previewUrl = nodemailer.getTestMessageUrl(info as any)
     if (previewUrl) {
       console.log('📧 Test email sent!')
       console.log('📧 Preview URL:', previewUrl)
     } else {
       console.log('✅ Email sent to admin:', settings.email)
     }
-    
+
     return { success: true, messageId: info.messageId }
   } catch (error) {
     console.error('❌ Failed to send publish notification:', error)
