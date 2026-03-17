@@ -94,40 +94,60 @@ export const getAdminNotificationSettings = async () => {
   }
 }
 
-// Test SMTP connection with better error handling
-export const testSMTPConnection = async (): Promise<{ success: boolean; message: string }> => {
-  try {
-    // Get admin user with SMTP settings
-    const admin = await prisma.user.findFirst({
-      where: { role: 'admin' },
-      select: {
-        smtpHost: true,
-        smtpPort: true,
-        smtpSecure: true,
-        smtpUser: true,
-        smtpPass: true,
-      }
-    })
+interface SMTPSettings {
+  smtpHost: string
+  smtpPort: number
+  smtpSecure: boolean
+  smtpUser: string
+  smtpPass: string
+}
 
-    if (!admin?.smtpHost || !admin?.smtpUser || !admin?.smtpPass) {
-      return {
-        success: false,
-        message: 'SMTP settings not configured. Please fill in all SMTP fields.'
+// Test SMTP connection with better error handling
+export const testSMTPConnection = async (settings?: SMTPSettings): Promise<{ success: boolean; message: string }> => {
+  try {
+    let smtpConfig: SMTPSettings
+
+    if (settings) {
+      // Use provided settings (from form)
+      smtpConfig = settings
+    } else {
+      // Get admin user with SMTP settings from database
+      const admin = await prisma.user.findFirst({
+        where: { role: 'admin' },
+        select: {
+          smtpHost: true,
+          smtpPort: true,
+          smtpSecure: true,
+          smtpUser: true,
+          smtpPass: true,
+        }
+      })
+
+      if (!admin?.smtpHost || !admin?.smtpUser || !admin?.smtpPass) {
+        return {
+          success: false,
+          message: 'SMTP settings not configured. Please fill in all SMTP fields.'
+        }
+      }
+
+      smtpConfig = {
+        smtpHost: admin.smtpHost,
+        smtpPort: admin.smtpPort || 587,
+        smtpSecure: admin.smtpSecure || false,
+        smtpUser: admin.smtpUser,
+        smtpPass: admin.smtpPass,
       }
     }
 
-    const port = admin.smtpPort || 587
-    const secure = admin.smtpSecure || false
-
     // Check for common misconfigurations
-    if (port === 587 && secure === true) {
+    if (smtpConfig.smtpPort === 587 && smtpConfig.smtpSecure === true) {
       return {
         success: false,
         message: 'Configuration Error: Port 587 uses STARTTLS (not SSL). Please uncheck "Use secure connection (TLS/SSL)".'
       }
     }
 
-    if (port === 465 && secure === false) {
+    if (smtpConfig.smtpPort === 465 && smtpConfig.smtpSecure === false) {
       return {
         success: false,
         message: 'Configuration Error: Port 465 requires SSL/TLS. Please check "Use secure connection (TLS/SSL)".'
@@ -135,12 +155,12 @@ export const testSMTPConnection = async (): Promise<{ success: boolean; message:
     }
 
     const transporter = nodemailer.createTransport({
-      host: admin.smtpHost,
-      port: port,
-      secure: secure,
+      host: smtpConfig.smtpHost,
+      port: smtpConfig.smtpPort,
+      secure: smtpConfig.smtpSecure,
       auth: {
-        user: admin.smtpUser,
-        pass: admin.smtpPass,
+        user: smtpConfig.smtpUser,
+        pass: smtpConfig.smtpPass,
       },
       // Add TLS options for better compatibility
       tls: {

@@ -291,12 +291,25 @@ export async function updateProfilePicture(imageUrl: string): Promise<{ error?: 
   }
 }
 
-export async function testSMTP(): Promise<{ success: boolean; message: string }> {
+export async function testSMTP(formData: FormData): Promise<{ success: boolean; message: string }> {
   const auth = await checkAdminAuth()
-  
+
   if (auth.error) {
     return { success: false, message: auth.error }
   }
 
-  return await testSMTPConnection()
+  // Get values from form instead of database
+  const smtpHost = formData.get("smtpHost") as string
+  const smtpPort = parseInt(formData.get("smtpPort") as string) || 587
+  const smtpSecure = formData.get("smtpSecure") === "on"
+  const smtpUser = formData.get("smtpUser") as string
+  const smtpPass = formData.get("smtpPass") as string
+
+  return await testSMTPConnection({
+    smtpHost,
+    smtpPort,
+    smtpSecure,
+    smtpUser,
+    smtpPass
+  })
 }

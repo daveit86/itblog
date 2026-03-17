@@ -35,6 +35,7 @@ export default function SettingsPage({ user }: { user: User }) {
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'email' | 'password' | 'smtp'>('profile')
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const smtpFormRef = useRef<HTMLFormElement>(null)
   const { update } = useSession()
 
   const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -138,8 +139,13 @@ export default function SettingsPage({ user }: { user: User }) {
   }
 
   const handleTestSMTP = async () => {
+    // Get form values from the SMTP form
+    if (!smtpFormRef.current) return
+
+    const formData = new FormData(smtpFormRef.current)
+
     toast.promise(
-      testSMTP(),
+      testSMTP(formData),
       {
         loading: 'Testing SMTP connection...',
         success: (data: { success: boolean; message: string }) => data.success ? data.message : data.message,
@@ -405,7 +411,7 @@ export default function SettingsPage({ user }: { user: User }) {
 
             {/* SMTP Tab */}
             {activeTab === 'smtp' && (
-              <form onSubmit={handleSMTPSubmit} className="space-y-6">
+              <form ref={smtpFormRef} onSubmit={handleSMTPSubmit} className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold text-foreground mb-1">Email Configuration (SMTP)</h2>
                   <p className="text-sm text-muted-foreground">Configure your SMTP server to send email notifications</p>
