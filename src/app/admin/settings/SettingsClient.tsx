@@ -109,27 +109,31 @@ export default function SettingsPage({ user }: { user: User }) {
 
   const handleNotificationSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
+
     const formData = new FormData(e.currentTarget)
     const result = await updateNotificationSettings(formData)
-    
+
     if (result.error) {
       toast.error(result.error)
     } else {
       toast.success('Notification settings updated successfully!')
+      // Force reload to show updated values
+      window.location.reload()
     }
   }
 
   const handleSMTPSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
+
     const formData = new FormData(e.currentTarget)
     const result = await updateSMTPSettings(formData)
-    
+
     if (result.error) {
       toast.error(result.error)
     } else {
       toast.success('SMTP settings saved successfully!')
+      // Force reload to show updated values
+      window.location.reload()
     }
   }
 

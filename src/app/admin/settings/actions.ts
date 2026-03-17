@@ -202,12 +202,16 @@ export async function updateNotificationSettings(formData: FormData): Promise<{ 
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { 
+      data: {
         notifyOnComments,
         notifyOnPublish,
         adminEmail: adminEmail || null
       },
     })
+
+    // Revalidate the settings page to clear cache
+    revalidatePath('/admin/settings')
+
     return { success: true }
   } catch (error) {
     return { error: "Failed to update notification settings" }
@@ -238,7 +242,7 @@ export async function updateSMTPSettings(formData: FormData): Promise<{ error?: 
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { 
+      data: {
         smtpHost: smtpHost || null,
         smtpPort,
         smtpSecure,
@@ -246,6 +250,10 @@ export async function updateSMTPSettings(formData: FormData): Promise<{ error?: 
         smtpPass: smtpPass || null,
       },
     })
+
+    // Revalidate the settings page to clear cache
+    revalidatePath('/admin/settings')
+
     return { success: true }
   } catch (error) {
     return { error: "Failed to update SMTP settings" }
