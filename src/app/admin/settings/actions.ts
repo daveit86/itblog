@@ -374,6 +374,13 @@ export async function sendTestEmail(): Promise<{ success: boolean; message: stri
 
     console.log('Sending test email to:', notificationEmail)
     console.log('From:', user.smtpUser)
+    console.log('Is Gmail:', isGmail)
+
+    // Gmail restriction: If sending to a different email than the SMTP user,
+    // the email might be silently dropped or rejected
+    if (isGmail && notificationEmail !== user.smtpUser) {
+      console.warn('⚠️ Gmail SMTP restriction: Sending to a different email than the authenticated user may fail or be marked as spam')
+    }
 
     const info = await transporter.sendMail({
       from: `"IT Blog Test" <${user.smtpUser}>`,
@@ -399,9 +406,16 @@ export async function sendTestEmail(): Promise<{ success: boolean; message: stri
     console.log('Message ID:', info.messageId)
     console.log('Response:', info.response)
 
+    // Check if there were any issues with Gmail
+    const isGmailSend = user.smtpHost?.includes('gmail.com') || user.smtpHost?.includes('google.com')
+    let warningMessage = ''
+    if (isGmailSend && notificationEmail !== user.smtpUser) {
+      warningMessage = '\n\n⚠️ Note: You sent to a different email than your Gmail account. Gmail may require you to verify the recipient or may mark it as spam. For production use, consider using the same email or setting up a "Send mail as" alias in Gmail settings.'
+    }
+
     return {
       success: true,
-      message: `Test email sent to ${notificationEmail}! Message ID: ${info.messageId}. Check your inbox and spam folder.`
+      message: `Test email sent to ${notificationEmail}! Message ID: ${info.messageId}.${warningMessage}`
     }
   } catch (error) {
     console.error('Failed to send test email:', error)
