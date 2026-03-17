@@ -473,8 +473,12 @@ export default function SettingsPage({ user }: { user: User }) {
                         type="text"
                         name="smtpHost"
                         id="smtpHost"
-                        defaultValue={user.smtpHost || ''}
+                        defaultValue={user.smtpHost ?? ''}
                         placeholder="smtp.gmail.com"
+                        autoComplete="off"
+                        data-1p-ignore
+                        data-lpignore="true"
+                        data-bwignore="true"
                         className="w-full rounded-lg border border-border bg-card px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     </div>
@@ -501,8 +505,12 @@ export default function SettingsPage({ user }: { user: User }) {
                       type="email"
                       name="smtpUser"
                       id="smtpUser"
-                      defaultValue={user.smtpUser || ''}
+                      defaultValue={user.smtpUser ?? ''}
                       placeholder="your-email@gmail.com"
+                      autoComplete="off"
+                      data-1p-ignore
+                      data-lpignore="true"
+                      data-bwignore="true"
                       className="w-full rounded-lg border border-border bg-card px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
@@ -515,8 +523,12 @@ export default function SettingsPage({ user }: { user: User }) {
                       type="password"
                       name="smtpPass"
                       id="smtpPass"
-                      defaultValue={user.smtpPass || ''}
+                      defaultValue={user.smtpPass ?? ''}
                       placeholder="your-app-password"
+                      autoComplete="off"
+                      data-1p-ignore
+                      data-lpignore="true"
+                      data-bwignore="true"
                       className="w-full rounded-lg border border-border bg-card px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     <p className="mt-1 text-xs text-muted-foreground">
