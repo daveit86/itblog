@@ -4,6 +4,9 @@ import { redirect } from "next/navigation"
 import prisma from "@/lib/prisma"
 import SettingsClient from "./SettingsClient"
 
+// Force dynamic rendering to always fetch fresh data
+export const dynamic = 'force-dynamic'
+
 export default async function SettingsPage() {
   const session = await getServerSession(authOptions)
   

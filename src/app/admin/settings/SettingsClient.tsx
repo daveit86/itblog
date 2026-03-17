@@ -86,14 +86,16 @@ export default function SettingsPage({ user }: { user: User }) {
       const data = await res.json()
 
       if (res.ok) {
+        console.log('Upload successful, URL:', data.url)
         // Update user profile with new image URL
         const result = await updateProfilePicture(data.url)
+        console.log('Update result:', result)
         if (result.success) {
           toast.success('Profile picture updated successfully!')
           // Update the session with the new image
           await update({ image: data.url })
-          // Reload page to show new image
-          window.location.reload()
+          // Force a hard reload to get fresh data from server
+          window.location.href = '/admin/settings'
         } else {
           toast.error(result.error || 'Failed to update profile picture')
         }
