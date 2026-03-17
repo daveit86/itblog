@@ -265,8 +265,11 @@ export async function updateProfilePicture(imageUrl: string): Promise<{ error?: 
   const auth = await checkAdminAuth()
   
   if (auth.error) {
+    console.error('Auth error in updateProfilePicture:', auth.error)
     return { error: auth.error }
   }
+
+  console.log('Updating profile picture for email:', auth.email, 'Image URL:', imageUrl)
 
   try {
     const user = await prisma.user.findUnique({
@@ -274,13 +277,18 @@ export async function updateProfilePicture(imageUrl: string): Promise<{ error?: 
     })
 
     if (!user) {
+      console.error('User not found for email:', auth.email)
       return { error: "User not found" }
     }
 
-    await prisma.user.update({
+    console.log('Found user:', user.id, 'Current image:', user.image)
+
+    const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: { image: imageUrl },
     })
+    
+    console.log('Profile picture updated. New image:', updatedUser.image)
     
     // Revalidate the settings page to clear cache
     revalidatePath('/admin/settings')

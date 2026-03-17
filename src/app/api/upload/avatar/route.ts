@@ -50,10 +50,13 @@ export async function POST(request: Request) {
     const uploadDir = join(process.cwd(), "public", "uploads", "avatars")
     const filepath = join(uploadDir, filename)
     
+    console.log('Saving avatar to:', filepath)
     await writeFile(filepath, buffer)
+    console.log('Avatar saved successfully')
 
     // Return the public URL
     const imageUrl = `/uploads/avatars/${filename}`
+    console.log('Returning image URL:', imageUrl)
 
     return NextResponse.json({ 
       success: true, 
