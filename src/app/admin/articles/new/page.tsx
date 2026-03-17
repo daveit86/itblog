@@ -405,19 +405,17 @@ export default function NewArticlePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
               name="published"
               id="published"
               checked={formData.published}
               onChange={handleChange}
-              className="h-4 w-4 rounded border-border text-primary focus:ring-primary bg-card shrink-0"
+              className="h-4 w-4 rounded border-border text-primary focus:ring-primary bg-card"
             />
-            <label htmlFor="published" className="text-sm text-foreground cursor-pointer whitespace-nowrap">
-              Publish immediately
-            </label>
-          </div>
+            <span className="text-sm text-foreground">Publish immediately</span>
+          </label>
 
           <div className="flex gap-4">
             <button

@@ -565,18 +565,16 @@ export default function SettingsPage({ user }: { user: User }) {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       name="smtpSecure"
                       id="smtpSecure"
                       defaultChecked={user.smtpSecure || false}
-                      className="w-4 h-4 rounded border-border text-primary focus:ring-primary shrink-0"
+                      className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
                     />
-                    <label htmlFor="smtpSecure" className="text-sm text-foreground cursor-pointer whitespace-nowrap">
-                      Use secure connection (TLS/SSL)
-                    </label>
-                  </div>
+                    <span className="text-sm text-foreground">Use secure connection (TLS/SSL)</span>
+                  </label>
                 </div>
 
                 <div className="pt-4 flex gap-3 flex-wrap">
