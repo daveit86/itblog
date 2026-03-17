@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth"
 import prisma from "@/lib/prisma"
 import bcrypt from 'bcryptjs'
 import { testSMTPConnection } from "@/lib/email"
+import { revalidatePath } from "next/cache"
 
 // Helper function to check admin authorization
 async function checkAdminAuth() {
@@ -267,12 +268,19 @@ export async function updateProfilePicture(imageUrl: string): Promise<{ error?: 
       return { error: "User not found" }
     }
 
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: { image: imageUrl },
     })
+    
+    console.log('Profile picture updated in database:', updatedUser.image)
+    
+    // Revalidate the settings page to clear cache
+    revalidatePath('/admin/settings')
+    
     return { success: true }
   } catch (error) {
+    console.error('Failed to update profile picture in database:', error)
     return { error: "Failed to update profile picture" }
   }
 }

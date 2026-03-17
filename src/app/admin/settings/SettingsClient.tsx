@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import toast from "react-hot-toast"
+import { useSession } from "next-auth/react"
 import { 
   updateProfile, 
   updateEmail, 
@@ -34,6 +35,7 @@ export default function SettingsPage({ user }: { user: User }) {
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'email' | 'password' | 'smtp'>('profile')
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { update } = useSession()
 
   const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -88,6 +90,8 @@ export default function SettingsPage({ user }: { user: User }) {
         const result = await updateProfilePicture(data.url)
         if (result.success) {
           toast.success('Profile picture updated successfully!')
+          // Update the session with the new image
+          await update({ image: data.url })
           // Reload page to show new image
           window.location.reload()
         } else {
