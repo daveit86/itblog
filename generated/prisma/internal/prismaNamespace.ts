@@ -1053,6 +1053,11 @@ export const UserScalarFieldEnum = {
   notifyOnComments: 'notifyOnComments',
   notifyOnPublish: 'notifyOnPublish',
   adminEmail: 'adminEmail',
+  smtpHost: 'smtpHost',
+  smtpPort: 'smtpPort',
+  smtpSecure: 'smtpSecure',
+  smtpUser: 'smtpUser',
+  smtpPass: 'smtpPass',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

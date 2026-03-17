@@ -20,8 +20,18 @@ export type UserModel = runtime.Types.Result.DefaultSelection<Prisma.$UserPayloa
 
 export type AggregateUser = {
   _count: UserCountAggregateOutputType | null
+  _avg: UserAvgAggregateOutputType | null
+  _sum: UserSumAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
+}
+
+export type UserAvgAggregateOutputType = {
+  smtpPort: number | null
+}
+
+export type UserSumAggregateOutputType = {
+  smtpPort: number | null
 }
 
 export type UserMinAggregateOutputType = {
@@ -35,6 +45,11 @@ export type UserMinAggregateOutputType = {
   notifyOnComments: boolean | null
   notifyOnPublish: boolean | null
   adminEmail: string | null
+  smtpHost: string | null
+  smtpPort: number | null
+  smtpSecure: boolean | null
+  smtpUser: string | null
+  smtpPass: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +65,11 @@ export type UserMaxAggregateOutputType = {
   notifyOnComments: boolean | null
   notifyOnPublish: boolean | null
   adminEmail: string | null
+  smtpHost: string | null
+  smtpPort: number | null
+  smtpSecure: boolean | null
+  smtpUser: string | null
+  smtpPass: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -65,11 +85,24 @@ export type UserCountAggregateOutputType = {
   notifyOnComments: number
   notifyOnPublish: number
   adminEmail: number
+  smtpHost: number
+  smtpPort: number
+  smtpSecure: number
+  smtpUser: number
+  smtpPass: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type UserAvgAggregateInputType = {
+  smtpPort?: true
+}
+
+export type UserSumAggregateInputType = {
+  smtpPort?: true
+}
 
 export type UserMinAggregateInputType = {
   id?: true
@@ -82,6 +115,11 @@ export type UserMinAggregateInputType = {
   notifyOnComments?: true
   notifyOnPublish?: true
   adminEmail?: true
+  smtpHost?: true
+  smtpPort?: true
+  smtpSecure?: true
+  smtpUser?: true
+  smtpPass?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -97,6 +135,11 @@ export type UserMaxAggregateInputType = {
   notifyOnComments?: true
   notifyOnPublish?: true
   adminEmail?: true
+  smtpHost?: true
+  smtpPort?: true
+  smtpSecure?: true
+  smtpUser?: true
+  smtpPass?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -112,6 +155,11 @@ export type UserCountAggregateInputType = {
   notifyOnComments?: true
   notifyOnPublish?: true
   adminEmail?: true
+  smtpHost?: true
+  smtpPort?: true
+  smtpSecure?: true
+  smtpUser?: true
+  smtpPass?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -155,6 +203,18 @@ export type UserAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: UserAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: UserSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: UserMinAggregateInputType
@@ -185,6 +245,8 @@ export type UserGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   _count?: UserCountAggregateInputType | true
+  _avg?: UserAvgAggregateInputType
+  _sum?: UserSumAggregateInputType
   _min?: UserMinAggregateInputType
   _max?: UserMaxAggregateInputType
 }
@@ -200,9 +262,16 @@ export type UserGroupByOutputType = {
   notifyOnComments: boolean
   notifyOnPublish: boolean
   adminEmail: string | null
+  smtpHost: string | null
+  smtpPort: number | null
+  smtpSecure: boolean | null
+  smtpUser: string | null
+  smtpPass: string | null
   createdAt: Date
   updatedAt: Date
   _count: UserCountAggregateOutputType | null
+  _avg: UserAvgAggregateOutputType | null
+  _sum: UserSumAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
 }
@@ -236,6 +305,11 @@ export type UserWhereInput = {
   notifyOnComments?: Prisma.BoolFilter<"User"> | boolean
   notifyOnPublish?: Prisma.BoolFilter<"User"> | boolean
   adminEmail?: Prisma.StringNullableFilter<"User"> | string | null
+  smtpHost?: Prisma.StringNullableFilter<"User"> | string | null
+  smtpPort?: Prisma.IntNullableFilter<"User"> | number | null
+  smtpSecure?: Prisma.BoolNullableFilter<"User"> | boolean | null
+  smtpUser?: Prisma.StringNullableFilter<"User"> | string | null
+  smtpPass?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   accounts?: Prisma.AccountListRelationFilter
@@ -254,6 +328,11 @@ export type UserOrderByWithRelationInput = {
   notifyOnComments?: Prisma.SortOrder
   notifyOnPublish?: Prisma.SortOrder
   adminEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  smtpHost?: Prisma.SortOrderInput | Prisma.SortOrder
+  smtpPort?: Prisma.SortOrderInput | Prisma.SortOrder
+  smtpSecure?: Prisma.SortOrderInput | Prisma.SortOrder
+  smtpUser?: Prisma.SortOrderInput | Prisma.SortOrder
+  smtpPass?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   accounts?: Prisma.AccountOrderByRelationAggregateInput
@@ -275,6 +354,11 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   notifyOnComments?: Prisma.BoolFilter<"User"> | boolean
   notifyOnPublish?: Prisma.BoolFilter<"User"> | boolean
   adminEmail?: Prisma.StringNullableFilter<"User"> | string | null
+  smtpHost?: Prisma.StringNullableFilter<"User"> | string | null
+  smtpPort?: Prisma.IntNullableFilter<"User"> | number | null
+  smtpSecure?: Prisma.BoolNullableFilter<"User"> | boolean | null
+  smtpUser?: Prisma.StringNullableFilter<"User"> | string | null
+  smtpPass?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   accounts?: Prisma.AccountListRelationFilter
@@ -293,11 +377,18 @@ export type UserOrderByWithAggregationInput = {
   notifyOnComments?: Prisma.SortOrder
   notifyOnPublish?: Prisma.SortOrder
   adminEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  smtpHost?: Prisma.SortOrderInput | Prisma.SortOrder
+  smtpPort?: Prisma.SortOrderInput | Prisma.SortOrder
+  smtpSecure?: Prisma.SortOrderInput | Prisma.SortOrder
+  smtpUser?: Prisma.SortOrderInput | Prisma.SortOrder
+  smtpPass?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
+  _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
   _min?: Prisma.UserMinOrderByAggregateInput
+  _sum?: Prisma.UserSumOrderByAggregateInput
 }
 
 export type UserScalarWhereWithAggregatesInput = {
@@ -314,6 +405,11 @@ export type UserScalarWhereWithAggregatesInput = {
   notifyOnComments?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   notifyOnPublish?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   adminEmail?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  smtpHost?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  smtpPort?: Prisma.IntNullableWithAggregatesFilter<"User"> | number | null
+  smtpSecure?: Prisma.BoolNullableWithAggregatesFilter<"User"> | boolean | null
+  smtpUser?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  smtpPass?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -329,6 +425,11 @@ export type UserCreateInput = {
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: string | null
+  smtpHost?: string | null
+  smtpPort?: number | null
+  smtpSecure?: boolean | null
+  smtpUser?: string | null
+  smtpPass?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -347,6 +448,11 @@ export type UserUncheckedCreateInput = {
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: string | null
+  smtpHost?: string | null
+  smtpPort?: number | null
+  smtpSecure?: boolean | null
+  smtpUser?: string | null
+  smtpPass?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -365,6 +471,11 @@ export type UserUpdateInput = {
   notifyOnComments?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notifyOnPublish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  smtpSecure?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  smtpUser?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -383,6 +494,11 @@ export type UserUncheckedUpdateInput = {
   notifyOnComments?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notifyOnPublish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  smtpSecure?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  smtpUser?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -401,6 +517,11 @@ export type UserCreateManyInput = {
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: string | null
+  smtpHost?: string | null
+  smtpPort?: number | null
+  smtpSecure?: boolean | null
+  smtpUser?: string | null
+  smtpPass?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -416,6 +537,11 @@ export type UserUpdateManyMutationInput = {
   notifyOnComments?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notifyOnPublish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  smtpSecure?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  smtpUser?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -431,6 +557,11 @@ export type UserUncheckedUpdateManyInput = {
   notifyOnComments?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notifyOnPublish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  smtpSecure?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  smtpUser?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -446,8 +577,17 @@ export type UserCountOrderByAggregateInput = {
   notifyOnComments?: Prisma.SortOrder
   notifyOnPublish?: Prisma.SortOrder
   adminEmail?: Prisma.SortOrder
+  smtpHost?: Prisma.SortOrder
+  smtpPort?: Prisma.SortOrder
+  smtpSecure?: Prisma.SortOrder
+  smtpUser?: Prisma.SortOrder
+  smtpPass?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type UserAvgOrderByAggregateInput = {
+  smtpPort?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -461,6 +601,11 @@ export type UserMaxOrderByAggregateInput = {
   notifyOnComments?: Prisma.SortOrder
   notifyOnPublish?: Prisma.SortOrder
   adminEmail?: Prisma.SortOrder
+  smtpHost?: Prisma.SortOrder
+  smtpPort?: Prisma.SortOrder
+  smtpSecure?: Prisma.SortOrder
+  smtpUser?: Prisma.SortOrder
+  smtpPass?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -476,8 +621,17 @@ export type UserMinOrderByAggregateInput = {
   notifyOnComments?: Prisma.SortOrder
   notifyOnPublish?: Prisma.SortOrder
   adminEmail?: Prisma.SortOrder
+  smtpHost?: Prisma.SortOrder
+  smtpPort?: Prisma.SortOrder
+  smtpSecure?: Prisma.SortOrder
+  smtpUser?: Prisma.SortOrder
+  smtpPass?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type UserSumOrderByAggregateInput = {
+  smtpPort?: Prisma.SortOrder
 }
 
 export type UserScalarRelationFilter = {
@@ -499,6 +653,18 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type NullableBoolFieldUpdateOperationsInput = {
+  set?: boolean | null
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -558,6 +724,11 @@ export type UserCreateWithoutAccountsInput = {
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: string | null
+  smtpHost?: string | null
+  smtpPort?: number | null
+  smtpSecure?: boolean | null
+  smtpUser?: string | null
+  smtpPass?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -575,6 +746,11 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: string | null
+  smtpHost?: string | null
+  smtpPort?: number | null
+  smtpSecure?: boolean | null
+  smtpUser?: string | null
+  smtpPass?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -608,6 +784,11 @@ export type UserUpdateWithoutAccountsInput = {
   notifyOnComments?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notifyOnPublish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  smtpSecure?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  smtpUser?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -625,6 +806,11 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   notifyOnComments?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notifyOnPublish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  smtpSecure?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  smtpUser?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -642,6 +828,11 @@ export type UserCreateWithoutSessionsInput = {
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: string | null
+  smtpHost?: string | null
+  smtpPort?: number | null
+  smtpSecure?: boolean | null
+  smtpUser?: string | null
+  smtpPass?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -659,6 +850,11 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: string | null
+  smtpHost?: string | null
+  smtpPort?: number | null
+  smtpSecure?: boolean | null
+  smtpUser?: string | null
+  smtpPass?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -692,6 +888,11 @@ export type UserUpdateWithoutSessionsInput = {
   notifyOnComments?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notifyOnPublish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  smtpSecure?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  smtpUser?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -709,6 +910,11 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   notifyOnComments?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notifyOnPublish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  smtpSecure?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  smtpUser?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -726,6 +932,11 @@ export type UserCreateWithoutAuditLogsInput = {
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: string | null
+  smtpHost?: string | null
+  smtpPort?: number | null
+  smtpSecure?: boolean | null
+  smtpUser?: string | null
+  smtpPass?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -743,6 +954,11 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: string | null
+  smtpHost?: string | null
+  smtpPort?: number | null
+  smtpSecure?: boolean | null
+  smtpUser?: string | null
+  smtpPass?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -776,6 +992,11 @@ export type UserUpdateWithoutAuditLogsInput = {
   notifyOnComments?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notifyOnPublish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  smtpSecure?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  smtpUser?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -793,6 +1014,11 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   notifyOnComments?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notifyOnPublish?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  smtpSecure?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  smtpUser?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smtpPass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -859,6 +1085,11 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: boolean
+  smtpHost?: boolean
+  smtpPort?: boolean
+  smtpSecure?: boolean
+  smtpUser?: boolean
+  smtpPass?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
@@ -878,6 +1109,11 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: boolean
+  smtpHost?: boolean
+  smtpPort?: boolean
+  smtpSecure?: boolean
+  smtpUser?: boolean
+  smtpPass?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -893,6 +1129,11 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: boolean
+  smtpHost?: boolean
+  smtpPort?: boolean
+  smtpSecure?: boolean
+  smtpUser?: boolean
+  smtpPass?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -908,11 +1149,16 @@ export type UserSelectScalar = {
   notifyOnComments?: boolean
   notifyOnPublish?: boolean
   adminEmail?: boolean
+  smtpHost?: boolean
+  smtpPort?: boolean
+  smtpSecure?: boolean
+  smtpUser?: boolean
+  smtpPass?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "bio" | "role" | "notifyOnComments" | "notifyOnPublish" | "adminEmail" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "bio" | "role" | "notifyOnComments" | "notifyOnPublish" | "adminEmail" | "smtpHost" | "smtpPort" | "smtpSecure" | "smtpUser" | "smtpPass" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
@@ -940,6 +1186,11 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     notifyOnComments: boolean
     notifyOnPublish: boolean
     adminEmail: string | null
+    smtpHost: string | null
+    smtpPort: number | null
+    smtpSecure: boolean | null
+    smtpUser: string | null
+    smtpPass: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["user"]>
@@ -1378,6 +1629,11 @@ export interface UserFieldRefs {
   readonly notifyOnComments: Prisma.FieldRef<"User", 'Boolean'>
   readonly notifyOnPublish: Prisma.FieldRef<"User", 'Boolean'>
   readonly adminEmail: Prisma.FieldRef<"User", 'String'>
+  readonly smtpHost: Prisma.FieldRef<"User", 'String'>
+  readonly smtpPort: Prisma.FieldRef<"User", 'Int'>
+  readonly smtpSecure: Prisma.FieldRef<"User", 'Boolean'>
+  readonly smtpUser: Prisma.FieldRef<"User", 'String'>
+  readonly smtpPass: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }

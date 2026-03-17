@@ -427,6 +427,23 @@ export default function SettingsPage({ user }: { user: User }) {
                   </div>
                 </div>
 
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="text-sm text-blue-800">
+                      <p className="font-medium">Port & Security Guide:</p>
+                      <ul className="list-disc list-inside mt-2 space-y-1">
+                        <li><strong>Port 587</strong> → STARTTLS (uncheck secure) - Most common, used by Gmail, Outlook</li>
+                        <li><strong>Port 465</strong> → SSL/TLS (check secure) - Older standard, still used by some providers</li>
+                        <li><strong>Port 25</strong> → Usually no encryption (not recommended)</li>
+                      </ul>
+                      <p className="mt-2 text-xs">💡 If you get "wrong version number" error, try toggling the secure connection checkbox.</p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>

@@ -94,17 +94,87 @@ export const getAdminNotificationSettings = async () => {
   }
 }
 
-// Test SMTP connection
+// Test SMTP connection with better error handling
 export const testSMTPConnection = async (): Promise<{ success: boolean; message: string }> => {
   try {
-    const transporter = await createTransporter()
+    // Get admin user with SMTP settings
+    const admin = await prisma.user.findFirst({
+      where: { role: 'admin' },
+      select: {
+        smtpHost: true,
+        smtpPort: true,
+        smtpSecure: true,
+        smtpUser: true,
+        smtpPass: true,
+      }
+    })
+
+    if (!admin?.smtpHost || !admin?.smtpUser || !admin?.smtpPass) {
+      return {
+        success: false,
+        message: 'SMTP settings not configured. Please fill in all SMTP fields.'
+      }
+    }
+
+    const port = admin.smtpPort || 587
+    const secure = admin.smtpSecure || false
+
+    // Check for common misconfigurations
+    if (port === 587 && secure === true) {
+      return {
+        success: false,
+        message: 'Configuration Error: Port 587 uses STARTTLS (not SSL). Please uncheck "Use secure connection (TLS/SSL)".'
+      }
+    }
+
+    if (port === 465 && secure === false) {
+      return {
+        success: false,
+        message: 'Configuration Error: Port 465 requires SSL/TLS. Please check "Use secure connection (TLS/SSL)".'
+      }
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: admin.smtpHost,
+      port: port,
+      secure: secure,
+      auth: {
+        user: admin.smtpUser,
+        pass: admin.smtpPass,
+      },
+      // Add TLS options for better compatibility
+      tls: {
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2'
+      },
+      // Timeout settings
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+    })
+
     await transporter.verify()
     return { success: true, message: 'SMTP connection successful!' }
   } catch (error) {
     console.error('SMTP test failed:', error)
-    return { 
-      success: false, 
-      message: error instanceof Error ? error.message : 'Failed to connect to SMTP server'
+
+    let message = error instanceof Error ? error.message : 'Failed to connect to SMTP server'
+
+    // Provide helpful error messages for common issues
+    if (message.includes('wrong version number') || message.includes('SSL')) {
+      message = 'SSL/TLS Error: Wrong port/security combination. ' +
+        'For port 587: Use STARTTLS (uncheck secure). ' +
+        'For port 465: Use SSL (check secure). ' +
+        'Common settings: Gmail (587 + unchecked), Outlook (587 + unchecked), Custom (465 + checked).'
+    } else if (message.includes('auth') || message.includes('login') || message.includes('credentials')) {
+      message = 'Authentication failed. Please check your username and app password. For Gmail, use an App Password (not your regular password).'
+    } else if (message.includes('connect') || message.includes('ETIMEDOUT') || message.includes('ENOTFOUND')) {
+      message = 'Connection failed. Please check the SMTP host and port. Make sure your firewall allows outgoing connections on the specified port.'
+    }
+
+    return {
+      success: false,
+      message
     }
   }
 }
