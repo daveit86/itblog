@@ -252,16 +252,12 @@ export async function updateSMTPSettings(formData: FormData): Promise<{ error?: 
   }
 }
 
-export async function updateProfilePicture(imageUrl: string): Promise<{ error?: string; success?: boolean; user?: any }> {
+export async function updateProfilePicture(imageUrl: string): Promise<{ error?: string; success?: boolean }> {
   const auth = await checkAdminAuth()
   
   if (auth.error) {
-    console.error('Auth error in updateProfilePicture:', auth.error)
     return { error: auth.error }
   }
-
-  console.log('Updating profile picture for email:', auth.email)
-  console.log('New image URL:', imageUrl)
 
   try {
     const user = await prisma.user.findUnique({
@@ -269,25 +265,20 @@ export async function updateProfilePicture(imageUrl: string): Promise<{ error?: 
     })
 
     if (!user) {
-      console.error('User not found for email:', auth.email)
       return { error: "User not found" }
     }
 
-    console.log('Found user:', user.id, 'Current image:', user.image)
-
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id: user.id },
       data: { image: imageUrl },
     })
     
-    console.log('Profile picture updated in database. New image:', updatedUser.image)
-    
     // Revalidate the settings page to clear cache
     revalidatePath('/admin/settings')
     
-    return { success: true, user: { id: updatedUser.id, image: updatedUser.image } }
+    return { success: true }
   } catch (error) {
-    console.error('Failed to update profile picture in database:', error)
+    console.error('Failed to update profile picture:', error)
     return { error: "Failed to update profile picture" }
   }
 }

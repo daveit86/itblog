@@ -86,10 +86,8 @@ export default function SettingsPage({ user }: { user: User }) {
       const data = await res.json()
 
       if (res.ok) {
-        console.log('Upload successful, URL:', data.url)
         // Update user profile with new image URL
         const result = await updateProfilePicture(data.url)
-        console.log('Update result:', result)
         if (result.success) {
           toast.success('Profile picture updated successfully!')
           // Update the session with the new image
