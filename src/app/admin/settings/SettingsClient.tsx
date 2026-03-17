@@ -571,7 +571,7 @@ export default function SettingsPage({ user }: { user: User }) {
                       name="smtpSecure"
                       id="smtpSecure"
                       defaultChecked={user.smtpSecure || false}
-                      className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                      className="w-auto h-4 rounded border-border text-primary focus:ring-primary"
                     />
                     <span className="text-sm text-foreground">Use secure connection (TLS/SSL)</span>
                   </label>

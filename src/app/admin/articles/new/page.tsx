@@ -412,7 +412,7 @@ export default function NewArticlePage() {
               id="published"
               checked={formData.published}
               onChange={handleChange}
-              className="h-4 w-4 rounded border-border text-primary focus:ring-primary bg-card"
+              className="h-4 w-auto rounded border-border text-primary focus:ring-primary bg-card"
             />
             <span className="text-sm text-foreground">Publish immediately</span>
           </label>
