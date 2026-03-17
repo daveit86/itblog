@@ -154,7 +154,10 @@ export const testSMTPConnection = async (settings?: SMTPSettings): Promise<{ suc
       }
     }
 
-    const transporter = nodemailer.createTransport({
+    // Gmail smtp-relay requires specific configuration
+    const isGmail = smtpConfig.smtpHost?.includes('gmail.com') || smtpConfig.smtpHost?.includes('google.com')
+    
+    const transportConfig: any = {
       host: smtpConfig.smtpHost,
       port: smtpConfig.smtpPort,
       secure: smtpConfig.smtpSecure,
@@ -162,16 +165,36 @@ export const testSMTPConnection = async (settings?: SMTPSettings): Promise<{ suc
         user: smtpConfig.smtpUser,
         pass: smtpConfig.smtpPass,
       },
-      // Add TLS options for better compatibility
-      tls: {
-        rejectUnauthorized: false,
-        minVersion: 'TLSv1.2'
-      },
       // Timeout settings
       connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 10000,
+    }
+
+    // For Gmail on port 587, use requireTLS instead of secure
+    if (isGmail && smtpConfig.smtpPort === 587) {
+      transportConfig.secure = false
+      transportConfig.requireTLS = true
+      transportConfig.tls = {
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2'
+      }
+    } else if (smtpConfig.smtpSecure) {
+      // For SSL/TLS connections
+      transportConfig.tls = {
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2'
+      }
+    }
+
+    console.log('Creating transporter with config:', {
+      host: transportConfig.host,
+      port: transportConfig.port,
+      secure: transportConfig.secure,
+      requireTLS: transportConfig.requireTLS,
     })
+
+    const transporter = nodemailer.createTransport(transportConfig)
 
     await transporter.verify()
     return { success: true, message: 'SMTP connection successful!' }
@@ -179,17 +202,40 @@ export const testSMTPConnection = async (settings?: SMTPSettings): Promise<{ suc
     console.error('SMTP test failed:', error)
 
     let message = error instanceof Error ? error.message : 'Failed to connect to SMTP server'
+    
+    // Check if it's Gmail
+    const isGmail = settings?.smtpHost?.includes('gmail.com') || settings?.smtpHost?.includes('google.com')
 
     // Provide helpful error messages for common issues
-    if (message.includes('wrong version number') || message.includes('SSL')) {
-      message = 'SSL/TLS Error: Wrong port/security combination. ' +
-        'For port 587: Use STARTTLS (uncheck secure). ' +
-        'For port 465: Use SSL (check secure). ' +
-        'Common settings: Gmail (587 + unchecked), Outlook (587 + unchecked), Custom (465 + checked).'
-    } else if (message.includes('auth') || message.includes('login') || message.includes('credentials')) {
-      message = 'Authentication failed. Please check your username and app password. For Gmail, use an App Password (not your regular password).'
-    } else if (message.includes('connect') || message.includes('ETIMEDOUT') || message.includes('ENOTFOUND')) {
-      message = 'Connection failed. Please check the SMTP host and port. Make sure your firewall allows outgoing connections on the specified port.'
+    if (message.includes('wrong version number') || message.includes('SSL') || message.includes('TLS')) {
+      if (isGmail) {
+        message = 'Gmail SSL/TLS Error: For Gmail with port 587, make sure "Use secure connection" is UNCHECKED. ' +
+          'Gmail uses STARTTLS which upgrades the connection after connecting. ' +
+          'Settings: Host=smtp.gmail.com, Port=587, Secure=unchecked, User=your-email@gmail.com, Pass=App-Password'
+      } else {
+        message = 'SSL/TLS Error: Wrong port/security combination. ' +
+          'For port 587: Use STARTTLS (uncheck secure). ' +
+          'For port 465: Use SSL (check secure).'
+      }
+    } else if (message.includes('auth') || message.includes('login') || message.includes('credentials') || message.includes('535') || message.includes('534')) {
+      if (isGmail) {
+        message = 'Gmail Authentication Failed: Please verify:\n' +
+          '1. You are using an App Password (not your regular Gmail password)\n' +
+          '2. 2-Factor Authentication is enabled on your Google account\n' +
+          '3. The App Password was generated at https://myaccount.google.com/apppasswords\n' +
+          '4. Your email address is correct'
+      } else {
+        message = 'Authentication failed. Please check your username and password.'
+      }
+    } else if (message.includes('connect') || message.includes('ETIMEDOUT') || message.includes('ENOTFOUND') || message.includes('ECONNREFUSED')) {
+      if (isGmail) {
+        message = 'Connection failed to Gmail. Please try:\n' +
+          '1. Use smtp.gmail.com instead of smtp-relay.gmail.com (relay requires special setup)\n' +
+          '2. Check your firewall allows outgoing connections on port 587\n' +
+          '3. Verify your internet connection'
+      } else {
+        message = 'Connection failed. Please check the SMTP host and port. Make sure your firewall allows outgoing connections on the specified port.'
+      }
     }
 
     return {

@@ -144,11 +144,24 @@ export default function SettingsPage({ user }: { user: User }) {
 
     const formData = new FormData(smtpFormRef.current)
 
+    console.log('Testing SMTP with form data:', {
+      host: formData.get('smtpHost'),
+      port: formData.get('smtpPort'),
+      secure: formData.get('smtpSecure'),
+      user: formData.get('smtpUser') ? '***' : 'empty'
+    })
+
     toast.promise(
       testSMTP(formData),
       {
         loading: 'Testing SMTP connection...',
-        success: (data: { success: boolean; message: string }) => data.success ? data.message : data.message,
+        success: (data: { success: boolean; message: string; debug?: any }) => {
+          console.log('SMTP Test Result:', data)
+          if (data.debug) {
+            console.log('Debug info:', data.debug)
+          }
+          return data.message
+        },
         error: 'Failed to test SMTP connection',
       }
     )

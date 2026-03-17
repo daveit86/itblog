@@ -291,7 +291,7 @@ export async function updateProfilePicture(imageUrl: string): Promise<{ error?: 
   }
 }
 
-export async function testSMTP(formData: FormData): Promise<{ success: boolean; message: string }> {
+export async function testSMTP(formData: FormData): Promise<{ success: boolean; message: string; debug?: any }> {
   const auth = await checkAdminAuth()
 
   if (auth.error) {
@@ -301,15 +301,31 @@ export async function testSMTP(formData: FormData): Promise<{ success: boolean; 
   // Get values from form instead of database
   const smtpHost = formData.get("smtpHost") as string
   const smtpPort = parseInt(formData.get("smtpPort") as string) || 587
-  const smtpSecure = formData.get("smtpSecure") === "on"
+  // Checkbox is only included when checked, so if it's not there, it's false
+  const smtpSecureRaw = formData.get("smtpSecure")
+  const smtpSecure = smtpSecureRaw === "on"
   const smtpUser = formData.get("smtpUser") as string
   const smtpPass = formData.get("smtpPass") as string
 
-  return await testSMTPConnection({
+  console.log('SMTP Test - Form values:', {
+    smtpHost,
+    smtpPort,
+    smtpSecureRaw,
+    smtpSecure,
+    smtpUser: smtpUser ? '***provided***' : '***empty***',
+    smtpPass: smtpPass ? '***provided***' : '***empty***'
+  })
+
+  const result = await testSMTPConnection({
     smtpHost,
     smtpPort,
     smtpSecure,
     smtpUser,
     smtpPass
   })
+
+  return {
+    ...result,
+    debug: { smtpHost, smtpPort, smtpSecure }
+  }
 }
