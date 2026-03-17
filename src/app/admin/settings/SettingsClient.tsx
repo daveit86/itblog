@@ -12,7 +12,8 @@ import {
   updateNotificationSettings,
   updateSMTPSettings,
   updateProfilePicture,
-  testSMTP
+  testSMTP,
+  sendTestEmail
 } from "./actions"
 
 interface User {
@@ -163,6 +164,17 @@ export default function SettingsPage({ user }: { user: User }) {
           return data.message
         },
         error: 'Failed to test SMTP connection',
+      }
+    )
+  }
+
+  const handleSendTestEmail = async () => {
+    toast.promise(
+      sendTestEmail(),
+      {
+        loading: 'Sending test email...',
+        success: (data: { success: boolean; message: string }) => data.message,
+        error: 'Failed to send test email',
       }
     )
   }
@@ -550,7 +562,7 @@ export default function SettingsPage({ user }: { user: User }) {
                   </div>
                 </div>
 
-                <div className="pt-4 flex gap-3">
+                <div className="pt-4 flex gap-3 flex-wrap">
                   <button type="submit" className="px-6 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg font-medium transition-colors">
                     Save SMTP Settings
                   </button>
@@ -560,6 +572,13 @@ export default function SettingsPage({ user }: { user: User }) {
                     className="px-6 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-lg font-medium transition-colors"
                   >
                     Test Connection
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendTestEmail}
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    Send Test Email
                   </button>
                 </div>
               </form>

@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma"
 import bcrypt from 'bcryptjs'
 import { testSMTPConnection } from "@/lib/email"
 import { revalidatePath } from "next/cache"
+import nodemailer from 'nodemailer'
 
 // Helper function to check admin authorization
 async function checkAdminAuth() {
@@ -288,6 +289,87 @@ export async function updateProfilePicture(imageUrl: string): Promise<{ error?: 
   } catch (error) {
     console.error('Failed to update profile picture:', error)
     return { error: "Failed to update profile picture" }
+  }
+}
+
+export async function sendTestEmail(): Promise<{ success: boolean; message: string }> {
+  const auth = await checkAdminAuth()
+
+  if (auth.error) {
+    return { success: false, message: auth.error }
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: auth.email! },
+      select: {
+        email: true,
+        adminEmail: true,
+        smtpHost: true,
+        smtpPort: true,
+        smtpSecure: true,
+        smtpUser: true,
+        smtpPass: true,
+      }
+    })
+
+    if (!user?.smtpHost || !user?.smtpUser || !user?.smtpPass) {
+      return {
+        success: false,
+        message: 'SMTP settings not configured. Please save your SMTP settings first.'
+      }
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: user.smtpHost,
+      port: user.smtpPort || 587,
+      secure: user.smtpSecure || false,
+      auth: {
+        user: user.smtpUser,
+        pass: user.smtpPass,
+      },
+    })
+
+    const notificationEmail = user.adminEmail || user.email
+
+    if (!notificationEmail) {
+      return {
+        success: false,
+        message: 'No notification email configured. Please set an email address.'
+      }
+    }
+
+    await transporter.sendMail({
+      from: `"IT Blog Test" <${user.smtpUser}>`,
+      to: notificationEmail,
+      subject: '✅ Test Email from IT Blog',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">✅ Test Email Successful!</h2>
+          <p>This is a test email from your IT Blog SMTP configuration.</p>
+          <p>If you're receiving this, your email notifications are working correctly!</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px;">
+            Sent at: ${new Date().toLocaleString()}<br>
+            SMTP Server: ${user.smtpHost}<br>
+            Port: ${user.smtpPort || 587}
+          </p>
+        </div>
+      `,
+      text: `Test Email Successful!\n\nThis is a test email from your IT Blog SMTP configuration.\nIf you're receiving this, your email notifications are working correctly!\n\nSent at: ${new Date().toLocaleString()}`,
+    })
+
+    return {
+      success: true,
+      message: `Test email sent successfully to ${notificationEmail}! Check your inbox (and spam folder).`
+    }
+  } catch (error) {
+    console.error('Failed to send test email:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to send test email'
+    return {
+      success: false,
+      message: `Failed to send test email: ${errorMessage}`
+    }
   }
 }
 
