@@ -320,15 +320,48 @@ export async function sendTestEmail(): Promise<{ success: boolean; message: stri
       }
     }
 
-    const transporter = nodemailer.createTransport({
+    // Gmail smtp-relay requires specific configuration
+    const isGmail = user.smtpHost?.includes('gmail.com') || user.smtpHost?.includes('google.com')
+    const port = user.smtpPort || 587
+    const secure = user.smtpSecure || false
+
+    const transportConfig: any = {
       host: user.smtpHost,
-      port: user.smtpPort || 587,
-      secure: user.smtpSecure || false,
+      port: port,
+      secure: secure,
       auth: {
         user: user.smtpUser,
         pass: user.smtpPass,
       },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+    }
+
+    // For Gmail on port 587, use requireTLS instead of secure
+    if (isGmail && port === 587) {
+      transportConfig.secure = false
+      transportConfig.requireTLS = true
+      transportConfig.tls = {
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2'
+      }
+    } else if (secure) {
+      // For SSL/TLS connections
+      transportConfig.tls = {
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2'
+      }
+    }
+
+    console.log('Creating transporter with config:', {
+      host: transportConfig.host,
+      port: transportConfig.port,
+      secure: transportConfig.secure,
+      requireTLS: transportConfig.requireTLS,
     })
+
+    const transporter = nodemailer.createTransport(transportConfig)
 
     const notificationEmail = user.adminEmail || user.email
 
@@ -339,7 +372,10 @@ export async function sendTestEmail(): Promise<{ success: boolean; message: stri
       }
     }
 
-    await transporter.sendMail({
+    console.log('Sending test email to:', notificationEmail)
+    console.log('From:', user.smtpUser)
+
+    const info = await transporter.sendMail({
       from: `"IT Blog Test" <${user.smtpUser}>`,
       to: notificationEmail,
       subject: '✅ Test Email from IT Blog',
@@ -359,9 +395,13 @@ export async function sendTestEmail(): Promise<{ success: boolean; message: stri
       text: `Test Email Successful!\n\nThis is a test email from your IT Blog SMTP configuration.\nIf you're receiving this, your email notifications are working correctly!\n\nSent at: ${new Date().toLocaleString()}`,
     })
 
+    console.log('Test email sent successfully!')
+    console.log('Message ID:', info.messageId)
+    console.log('Response:', info.response)
+
     return {
       success: true,
-      message: `Test email sent successfully to ${notificationEmail}! Check your inbox (and spam folder).`
+      message: `Test email sent to ${notificationEmail}! Message ID: ${info.messageId}. Check your inbox and spam folder.`
     }
   } catch (error) {
     console.error('Failed to send test email:', error)
