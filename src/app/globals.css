@@ -323,6 +323,12 @@ input, textarea, select {
   width: 100%;
 }
 
+/* Checkboxes and radio buttons should not have width: 100% */
+input[type="checkbox"],
+input[type="radio"] {
+  width: auto;
+}
+
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--primary);
