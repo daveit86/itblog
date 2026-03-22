@@ -112,6 +112,29 @@ A modern, secure, and feature-rich blogging platform built with Next.js, React, 
 6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
+## 🐳 Docker Quick Start
+
+Prefer Docker? No problem! Run the entire stack with one command:
+
+### Development (with hot-reloading)
+```bash
+# Start everything
+./docker-dev.sh start
+
+# Access at http://localhost:98172
+```
+
+### Production
+```bash
+# Copy environment template
+cp .env.docker.example .env.docker
+
+# Edit with your values, then start
+./docker-prod.sh start
+```
+
+See [DOCKER.md](DOCKER.md) for detailed Docker documentation.
+
 ## 📚 Available Scripts
 
 | Script | Description |

@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: itblog-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-itblog}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: ${DB_NAME:-itblog}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - itblog-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-itblog} -d ${DB_NAME:-itblog}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: itblog-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-98172}:3000"
+    environment:
+      # Database
+      DATABASE_URL: postgresql://${DB_USER:-itblog}:${DB_PASSWORD:-changeme}@db:5432/${DB_NAME:-itblog}
+      # NextAuth
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:98172}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      # Admin
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # Notifications
+      ADMIN_NOTIFICATION_EMAIL: ${ADMIN_NOTIFICATION_EMAIL}
+      # SMTP (optional)
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      # App URL
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:98172}
+    volumes:
+      - uploads_data:/app/public/uploads
+    networks:
+      - itblog-network
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    name: itblog-postgres-data
+  uploads_data:
+    name: itblog-uploads-data
+
+networks:
+  itblog-network:
+    driver: bridge
